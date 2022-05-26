@@ -1,5 +1,5 @@
 # create and run project
-npx create-next-app@latest cmnext-stock-2022 --typescript
+npx create-next-app@latest nextjs-project --typescript
 yarn dev
 yarn dev 
 or 
