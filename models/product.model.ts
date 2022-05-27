@@ -4,5 +4,6 @@ export interface ProductData {
   image: string;
   price: number;
   stock: number;
+  file: string;
   createdAt: string;
 }

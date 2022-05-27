@@ -43,6 +43,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import router from "next/router";
 import Stack from "@mui/material/Stack";
 import Swal from "sweetalert2";
+import { Button, TextField } from "@mui/material";
+import zipcelx from "zipcelx";
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -118,10 +120,17 @@ export const Stock = ({}: Props) => {
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [ids, setIds] = React.useState<Array<number>>([]);
+  const [searched, setSearched] = React.useState<string>("");
 
   const productList = useSelector(productSelector);
+  // const [rows, setRows] = React.useState(productList ?? []);
   const rows = productList ?? [];
+  // const rows = productList ?? [];
   const dispatch = useAppDispatch();
+
+  const requestSearch = (searchedVal: string) => {
+    console.log(searchedVal);
+  };
 
   const DeleteAll = (id: any) => {
     Swal.fire({
@@ -284,6 +293,10 @@ export const Stock = ({}: Props) => {
     dispatch(getProducts());
   }, [dispatch]);
 
+  React.useEffect(() => {
+    dispatch(getProducts(searched));
+  }, [dispatch, searched]);
+
   const headCells: readonly HeadCell[] = [
     {
       id: "name",
@@ -350,9 +363,10 @@ export const Stock = ({}: Props) => {
               key={headCell.id}
               align={headCell.numeric ? "center" : "center"}
               padding={headCell.disablePadding ? "none" : "normal"}
-              sortDirection={orderBy === headCell.id ? order : false}
+              // sortDirection={orderBy === headCell.id ? order : false}
             >
-              {headCell.id === "image" ? (
+              {headCell.label}
+              {/* {headCell.id === "image" ? (
                 `${headCell.label}`
               ) : (
                 <TableSortLabel
@@ -369,7 +383,7 @@ export const Stock = ({}: Props) => {
                     </Box>
                   ) : null}
                 </TableSortLabel>
-              )}
+              )} */}
               {/* <TableSortLabel
                 active={orderBy === headCell.id}
                 direction={orderBy === headCell.id ? order : "asc"}
@@ -393,15 +407,57 @@ export const Stock = ({}: Props) => {
       </TableHead>
     );
   }
+  const handelExportToExcel = (evt: any) => {
+    // const headData = Object.keys(rows[0]).map((col) => ({
+    //   value: col,
+    //   type: "string",
+    // }));
+    const headData = [
+      { value: "Name", type: "string" },
+      { value: "Price", type: "string" },
+      { value: "Stock", type: "string" },
+      { value: "CreatedAt", type: "string" },
+    ];
+    console.log(headData);
+    const bodyData = rows.map((item) =>
+      Object.values(item)
+        .filter((value, key) => key !== 0 && key !== 2 && key !== 6)
+        .map((value, key) => ({ value, type: typeof value }))
+    );
+    const config: any = {
+      filename: "Stock",
+      sheet: { data: [headData, ...bodyData] },
+    };
+    zipcelx(config);
+  };
 
   return (
     <Layout>
-      <Box sx={{ width: "100%" }}>
+      <TextField
+        fullWidth
+        value={searched}
+        label="Search..."
+        onChange={(e: React.ChangeEvent<any>) => {
+          e.preventDefault();
+          setSearched(e.target.value);
+        }}
+      />
+
+      <Box sx={{ width: "100%", mt: 2 }}>
         <Paper sx={{ width: "100%", mb: 2 }}>
           <EnhancedTableToolbar
             numSelected={selected.length}
             valSelected={selected}
           />
+
+          <Button
+            sx={{ ml: 2 }}
+            onClick={handelExportToExcel}
+            variant="outlined"
+          >
+            Export to Excel
+          </Button>
+
           <TableContainer>
             <Table
               sx={{ minWidth: 750 }}
@@ -419,7 +475,9 @@ export const Stock = ({}: Props) => {
               <TableBody>
                 {/* if you don't need to support IE11, you can replace the `stableSort` call with:
               rows.slice().sort(getComparator(order, orderBy)) */}
-                {stableSort(rows, getComparator(order, orderBy))
+
+                {/* {stableSort(rows, getComparator(order, orderBy)) */}
+                {rows
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => {
                     const isItemSelected = isSelected(row.id);

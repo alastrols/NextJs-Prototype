@@ -18,11 +18,13 @@
     "@mui/x-data-grid": "^5.11.1",
     "@react-hook/debounce": "^4.0.0",
     "@reduxjs/toolkit": "^1.8.1",
+    "@types/zipcelx": "^1.5.0",
     "axios": "^0.27.2",
     "chart.js": "^3.7.1",
     "cookie": "^0.5.0",
     "formik": "^2.2.9",
     "formik-material-ui": "^4.0.0-alpha.2",
+    "material-ui-search-bar": "^1.0.0",
     "moment": "^2.29.3",
     "next": "12.1.6",
     "react": "18.1.0",
@@ -35,7 +37,8 @@
     "react-number-format": "^4.9.3",
     "react-redux": "^8.0.1",
     "sharp": "^0.30.5",
-    "sweetalert2": "^11.4.17"
+    "sweetalert2": "^11.4.17",
+    "zipcelx": "^1.6.2"
   },
   "devDependencies": {
     "@types/cookie": "^0.5.1",
