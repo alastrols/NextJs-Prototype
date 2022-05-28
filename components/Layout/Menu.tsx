@@ -14,7 +14,7 @@ import MailIcon from "@mui/icons-material/Mail";
 import { ListItem, Stack } from "@mui/material";
 import Link from "next/link";
 import { Layers, BarChart, Person } from "@mui/icons-material";
-import router from "next/router";
+import { useRouter } from "next/router";
 
 import Image from "next/image";
 
@@ -36,6 +36,7 @@ type MenuProps = {
 
 export default function Menu({ open, onDrawerClose }: MenuProps) {
   const theme = useTheme();
+  const router = useRouter();
 
   return (
     <Drawer
@@ -94,19 +95,6 @@ export default function Menu({ open, onDrawerClose }: MenuProps) {
               <BarChart />
             </ListItemIcon>
             <ListItemText primary="Report" />
-          </ListItem>
-        </Link>
-
-        {/* Aboutus */}
-        <Link href="/aboutus" passHref>
-          <ListItem
-            button
-            className={router.pathname === "/aboutus" ? "Mui-selected" : ""}
-          >
-            <ListItemIcon>
-              <Person />
-            </ListItemIcon>
-            <ListItemText primary="About us" />
           </ListItem>
         </Link>
       </List>

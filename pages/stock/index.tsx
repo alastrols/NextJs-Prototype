@@ -43,8 +43,13 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import router from "next/router";
 import Stack from "@mui/material/Stack";
 import Swal from "sweetalert2";
-import { Button, TextField } from "@mui/material";
+import { Button, Fab, TextField } from "@mui/material";
 import zipcelx from "zipcelx";
+import * as Excel from "exceljs";
+import { saveAs } from "file-saver";
+import axios from "axios";
+import { Add } from "@mui/icons-material";
+import Link from "next/link";
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -297,6 +302,60 @@ export const Stock = ({}: Props) => {
     dispatch(getProducts(searched));
   }, [dispatch, searched]);
 
+  async function saveAsExcel() {
+    const wb = new Excel.Workbook();
+
+    const ws = wb.addWorksheet();
+
+    // ws.columns = [
+    //   { header: "Name", key: "name", width: 30 },
+    //   { header: "Price", key: "price", width: 10 },
+    //   { header: "Stock", key: "stock", width: 10 },
+    //   { header: "CreatedAt", key: "createAt", width: 25 },
+    // ];
+    ws.columns = [{ width: 55 }, { width: 10 }, { width: 10 }, { width: 35 }];
+    const row: any = ws.addRow(["Name", "Price", "Stock", "CreatedAt"]);
+    row.font = {
+      bold: true,
+    };
+
+    // const url =
+    //   "https://raw.githubusercontent.com/OfficeDev/office-scripts-docs/master/docs/images/git-octocat.png";
+
+    // let position: number = 2;
+    // let axiosResponse: any = await axios(url, {
+    //   responseType: "arraybuffer",
+    // });
+
+    rows.map(async (item) => {
+      const content = ws.addRow([
+        item.name,
+        item.price,
+        item.stock,
+        item.createdAt,
+      ]);
+      content.height = 100;
+
+      // const dataBuffer = Buffer.from(axiosResponse.data, "binary").toString(
+      //   "base64"
+      // );
+      // var imageID = wb.addImage({
+      //   base64: dataBuffer,
+      //   extension: "png",
+      // });
+      // ws.addImage(imageID, `B${position}:B${position}`);
+
+      // position++;
+    });
+
+    ws.eachRow(function (row, rowNumber) {
+      row.alignment = { vertical: "middle", horizontal: "center" };
+    });
+
+    const buf = await wb.xlsx.writeBuffer();
+    saveAs(new Blob([buf]), "stock.xlsx");
+  }
+
   const headCells: readonly HeadCell[] = [
     {
       id: "name",
@@ -407,29 +466,6 @@ export const Stock = ({}: Props) => {
       </TableHead>
     );
   }
-  const handelExportToExcel = (evt: any) => {
-    // const headData = Object.keys(rows[0]).map((col) => ({
-    //   value: col,
-    //   type: "string",
-    // }));
-    const headData = [
-      { value: "Name", type: "string" },
-      { value: "Price", type: "string" },
-      { value: "Stock", type: "string" },
-      { value: "CreatedAt", type: "string" },
-    ];
-    console.log(headData);
-    const bodyData = rows.map((item) =>
-      Object.values(item)
-        .filter((value, key) => key !== 0 && key !== 2 && key !== 6)
-        .map((value, key) => ({ value, type: typeof value }))
-    );
-    const config: any = {
-      filename: "Stock",
-      sheet: { data: [headData, ...bodyData] },
-    };
-    zipcelx(config);
-  };
 
   return (
     <Layout>
@@ -452,8 +488,18 @@ export const Stock = ({}: Props) => {
 
           <Button
             sx={{ ml: 2 }}
-            onClick={handelExportToExcel}
-            variant="outlined"
+            onClick={() => router.push("/stock/add")}
+            variant="contained"
+            color="primary"
+          >
+            Add Stock
+          </Button>
+
+          <Button
+            sx={{ ml: 2, flexGrow: 1 }}
+            onClick={saveAsExcel}
+            variant="contained"
+            color="success"
           >
             Export to Excel
           </Button>
