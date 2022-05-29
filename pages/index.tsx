@@ -1,10 +1,17 @@
 import React from "react";
-import withAuth from "@/components/withAuth";
+import Header from "@/components/FrontEnd/Header";
 
 type Props = {};
 
 export const Index = ({}: Props) => {
-  return <></>;
+  return (
+    <div className="wrapper">
+      <Header />
+      <div className="content_main">
+        <p>1234</p>
+      </div>
+    </div>
+  );
 };
 
-export default withAuth(Index);
+export default Index;

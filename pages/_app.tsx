@@ -6,7 +6,8 @@ import { getSession } from "@/store/slices/userSlice";
 import React from "react";
 import { blue } from "@mui/material/colors";
 import { createTheme, ThemeProvider } from "@mui/material";
-import "bootstrap/dist/css/bootstrap.css";
+
+import "../styles/stylesheet.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const theme = createTheme({

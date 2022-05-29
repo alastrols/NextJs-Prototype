@@ -28,9 +28,6 @@ const withAuth = (WrappedComponent: React.FC) => (props: any) => {
       if (!isAuthenticated) {
         router.push(`/login`);
         return null;
-      } else if (route == "/") {
-        router.push(`/stock`); // default page after login when call root path
-        return null;
       }
     } else {
       if (isAuthenticated) {
