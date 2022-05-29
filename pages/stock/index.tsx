@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout/Layout";
 import withAuth from "@/components/withAuth";
-import * as React from "react";
+import React, { useRef, useState} from "react";
 import { alpha } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Table from "@mui/material/Table";
@@ -33,7 +33,7 @@ import { useAppDispatch } from "@/store/store";
 import { useSelector } from "react-redux";
 import { ProductData } from "@/models/product.model";
 import Image from "next/image";
-import { productImageURL } from "@/utils/commonUtil";
+import { productImageURL, getBase64 } from "@/utils/commonUtil";
 import Zoom from "react-medium-image-zoom";
 import "react-medium-image-zoom/dist/styles.css";
 import NumberFormat from "react-number-format";
@@ -47,7 +47,7 @@ import { Button, Fab, TextField } from "@mui/material";
 import zipcelx from "zipcelx";
 import * as Excel from "exceljs";
 import { saveAs } from "file-saver";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { Add } from "@mui/icons-material";
 import Link from "next/link";
 
@@ -126,10 +126,11 @@ export const Stock = ({}: Props) => {
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [ids, setIds] = React.useState<Array<number>>([]);
   const [searched, setSearched] = React.useState<string>("");
-
+ 
   const productList = useSelector(productSelector);
   // const [rows, setRows] = React.useState(productList ?? []);
   const rows = productList ?? [];
+ 
   // const rows = productList ?? [];
   const dispatch = useAppDispatch();
 
@@ -302,7 +303,30 @@ export const Stock = ({}: Props) => {
     dispatch(getProducts(searched));
   }, [dispatch, searched]);
 
+//   interface Window {
+//     Image: {   
+//         prototype: HTMLImageElement;
+//         new (): HTMLImageElement;
+//     };
+// }
+  // const getBase64Image = (url:any) => {
+  //   const img = new window.Image()
+  //   img.setAttribute('crossOrigin', 'anonymous');
+  //   img.onload = () => {
+  //     const canvas = document.createElement("canvas");
+  //     canvas.width = img.width;
+  //     canvas.height = img.height;
+  //     const ctx:any = canvas.getContext("2d");
+  //     ctx.drawImage(img, 0, 0);
+  //     const dataURL = canvas.toDataURL("image/png");
+  //     // console.log(dataURL)
+  //     return dataURL;
+  //   }
+  //   img.src = url
+  // }
+  
   async function saveAsExcel() {
+    
     const wb = new Excel.Workbook();
 
     const ws = wb.addWorksheet();
@@ -313,47 +337,101 @@ export const Stock = ({}: Props) => {
     //   { header: "Stock", key: "stock", width: 10 },
     //   { header: "CreatedAt", key: "createAt", width: 25 },
     // ];
-    ws.columns = [{ width: 55 }, { width: 10 }, { width: 10 }, { width: 35 }];
-    const row: any = ws.addRow(["Name", "Price", "Stock", "CreatedAt"]);
+    ws.columns = [
+      { width: 55 },
+      { width: 18 },
+      { width: 10 },
+      { width: 10 },
+      { width: 35 },
+    ];
+    const row: any = ws.addRow([
+      "Name",
+      "Image",
+      "Price",
+      "Stock",
+      "CreatedAt",
+    ]);
     row.font = {
       bold: true,
     };
 
-    // const url =
-    //   "https://raw.githubusercontent.com/OfficeDev/office-scripts-docs/master/docs/images/git-octocat.png";
+    let position: number = 2;
 
-    // let position: number = 2;
-    // let axiosResponse: any = await axios(url, {
-    //   responseType: "arraybuffer",
+    
+
+    await Promise.all(
+      rows.map(async (item): Promise<any> => {
+        // let axiosResponse: any = await axios(productImageURL(item.image), {
+        //   responseType: "arraybuffer",
+        // });
+        // const url =
+        //   "https://raw.githubusercontent.com/OfficeDev/office-scripts-docs/master/docs/images/git-octocat.png";
+        // const url = "https://www.aath-share.com/upload/catalog/1653639084522___test3.png";
+        const url = `${process.env.NEXT_PUBLIC_BASE_URL_GET_IMAGE}/${item.image}`;
+        // const url  = productImageURL(item.image);
+
+        
+
+        let axiosResponse: any = await axios.get<
+          any,
+          AxiosResponse<ArrayBuffer>
+        >(url, {
+          responseType: "arraybuffer"
+        });
+        const content = ws.addRow([
+          item.name,
+          "",
+          item.price,
+          item.stock,
+          item.createdAt,
+        ]);
+        content.height = 100;
+        // console.log(item.image);
+
+        const dataBuffer = Buffer.from(axiosResponse.data, "binary").toString(
+          "base64"
+        );
+        var imageID = wb.addImage({
+          base64: dataBuffer,
+          extension: "png",
+        });
+        ws.addImage(imageID, `B${position}:B${position}`);
+
+        position++;
+      })
+    );
+    // const url = getBase64Image('https://uploads.sitepoint.com/wp-content/uploads/2015/12/1450377118cors3.png')
+    //   console.log(url)
+    // rows.map(async (item) => {
+      
+    //   const content = ws.addRow([
+    //     item.name,
+    //     item.image,
+    //     item.price,
+    //     item.stock,
+    //     item.createdAt,
+    //   ]);
+    //   content.height = 100;
+    //   // console.log(item.image);
+
+    //   // const dataBuffer = Buffer.from(axiosResponse.data, "binary").toString(
+    //   //   "base64"
+    //   // );
+    //   var imageID = wb.addImage({
+    //     base64: url,
+    //     extension: "png",
+    //   });
+    //   ws.addImage(imageID, `B${position}:B${position}`);
+
+    //   position++;
     // });
 
-    rows.map(async (item) => {
-      const content = ws.addRow([
-        item.name,
-        item.price,
-        item.stock,
-        item.createdAt,
-      ]);
-      content.height = 100;
-
-      // const dataBuffer = Buffer.from(axiosResponse.data, "binary").toString(
-      //   "base64"
-      // );
-      // var imageID = wb.addImage({
-      //   base64: dataBuffer,
-      //   extension: "png",
-      // });
-      // ws.addImage(imageID, `B${position}:B${position}`);
-
-      // position++;
-    });
-
-    ws.eachRow(function (row, rowNumber) {
-      row.alignment = { vertical: "middle", horizontal: "center" };
-    });
+    // ws.eachRow(function (row, rowNumber) {
+    //   row.alignment = { vertical: "middle", horizontal: "center" };
+    // });
 
     const buf = await wb.xlsx.writeBuffer();
-    saveAs(new Blob([buf]), "stock.xlsx");
+    await saveAs(new Blob([buf]), "stock.xlsx");
   }
 
   const headCells: readonly HeadCell[] = [
@@ -554,16 +632,18 @@ export const Stock = ({}: Props) => {
                           <Typography variant="body1">{row.name}</Typography>
                         </TableCell>
                         <TableCell align="center">
-                          <Zoom>
-                            <Image
-                              width={100}
-                              height={100}
-                              objectFit="cover"
-                              alt="product image"
-                              src={productImageURL(row.image)}
-                              style={{ borderRadius: "5%" }}
-                            />
-                          </Zoom>
+                          {/* <Zoom> */}
+                         
+                          <Image
+                       
+                            width={100}
+                            height={100}
+                            objectFit="cover"
+                            alt="product image"
+                            src={productImageURL(row.image)}
+                            style={{ borderRadius: "5%" }}
+                          />
+                          {/* </Zoom> */}
                         </TableCell>
                         <TableCell align="center">
                           <Typography variant="body1">

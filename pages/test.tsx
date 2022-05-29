@@ -1,14 +1,19 @@
 import { doGetStockById } from "@/services/serverService";
 import axios from "axios";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
-import React from "react";
-
+import Script from "next/script";
+import React, { useRef, useEffect } from "react";
 
 export const Test = ({ product }: any) => {
-  const numbers = [1, 2, 3, 4, 5];
+  const myContainer = useRef<any>(null);
+
+  useEffect(() => {
+    myContainer.current;
+  });
+
   return (
     <div>
-      <table className="table">
+      <table className="table" id="table" ref={myContainer}>
         <thead>
           <tr>
             <th scope="col">#</th>
@@ -36,7 +41,7 @@ export const getServerSideProps: GetServerSideProps = async (
 ) => {
   const id: string = "14";
   const product = await axios.get("https://www.mecallapi.com/api/users");
-  console.log(product);
+  // console.log(product);
   return {
     props: {
       product: product.data,

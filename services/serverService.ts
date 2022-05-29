@@ -3,6 +3,7 @@ import { UserData } from "@/models/user.model";
 import { ProductData } from "@/models/product.model";
 import axios from "axios";
 import httpClient from "@/utils/httpClient";
+import { productImageURL, getBase64 } from "@/utils/commonUtil";
 
 type signProps = {
   username: string;
@@ -41,9 +42,20 @@ export const getSession = async (): Promise<GetSession> => {
 export const getProducts = async (keyword?: string): Promise<ProductData[]> => {
   if (keyword) {
     const response = await httpClient.get(`/stock/product/keyword/${keyword}`);
+
     return response.data;
   } else {
     const response = await httpClient.get(`/stock/product`);
+    // response.data.forEach(async (element: any) => {
+    //   element.imgurl = productImageURL(element.image);
+    //   let axiosResponse: any = await axios(element.imgurl, {
+    //     responseType: "arraybuffer",
+    //   });
+    //   element.imgurl = Buffer.from(axiosResponse.data, "binary").toString(
+    //     "base64"
+    //   );
+    // });
+    // console.log(response.data);
     return response.data;
   }
 };

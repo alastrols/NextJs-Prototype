@@ -8,6 +8,7 @@ const path = require("path");
 const fs = require("fs-extra");
 const Op = Sequelize.Op;
 const jwt = require("./jwt");
+const axios = require("axios").default;
 
 // Upload Image
 uploadImage = async (files, doc) => {
@@ -31,8 +32,26 @@ uploadImage = async (files, doc) => {
 };
 
 // Get Products
-router.get("/product", jwt.verify, async (req, res) => {
+router.get("/product", async (req, res) => {
   let result = await product.findAll({ order: Sequelize.literal("id DESC") });
+
+  // for (i = 0; i < result.length; i++) {
+  //   result[i].image = "http://localhost:8085/images/" + result[i].image;
+  //   try {
+  //     let axiosResponse = await axios(result[i].image, {
+  //       responseType: "arraybuffer",
+  //     });
+      
+  //     result[i].image = Buffer.from(axiosResponse.data, "binary").toString(
+  //       "base64"
+  //     );
+  //     console.log(result[i].image)
+  //     // result[i].image = axiosResponse
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // }
+
   res.json(result);
 });
 
