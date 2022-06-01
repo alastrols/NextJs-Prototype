@@ -1,7 +1,11 @@
-import axios from 'axios'
+import axios from "axios";
 
 const httpClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BASE_URL_API
-})
+  baseURL: process.env.NEXT_PUBLIC_BASE_URL_API,
+});
 
-export default httpClient
+export const httpClientAdmin = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_BASE_URL_ADMIN_API,
+});
+
+export default httpClient;

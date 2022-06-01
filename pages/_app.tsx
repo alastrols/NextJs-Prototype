@@ -3,6 +3,7 @@ import type { AppProps } from "next/app";
 import { Provider } from "react-redux";
 import { store } from "@/store/store";
 import { getSession } from "@/store/slices/userSlice";
+import { getAdminSession } from "@/store/slices/admin/adminSlice";
 import React from "react";
 import { blue } from "@mui/material/colors";
 import { createTheme, ThemeProvider } from "@mui/material";
@@ -41,6 +42,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   React.useEffect(() => {
     store.dispatch(getSession());
+    store.dispatch(getAdminSession());
   }, []);
 
   return (

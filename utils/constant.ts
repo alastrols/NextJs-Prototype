@@ -7,6 +7,7 @@ export const PERSIST_LOCALE = "PERSIST_LOCALE";
 export const PERSIST_BOOKMARK_SHOP = "PERSIST_BOOKMARK_SHOP";
 export const COUNTRY_THAI_ID = "5a8e9be55e843e9239e91b76";
 export const ACCESS_TOKEN_KEY = "access_token";
+export const ADMIN_ACCESS_TOKEN_KEY = "admin-access-token";
 export const DISPLAY_MODE_TEXT = "TEXT";
 export const DISPLAY_MODE_IMAGE = "IMAGE";
 export const HTTP_METHOD_GET = "GET";
