@@ -41,7 +41,7 @@ export default function Header() {
     <header className="sticky_header shadow-sm">
       <div className="container-fluid">
         <div className="row align-items-center">
-          <div className="col-12 col-sm-2 order-sm-3 header_hotline">
+          <div className="col-12 col-sm-12 order-sm-3 col-md-3 col-xl-2 col-xxl-2 header_hotline">
             <div className="bg_gray d-flex align-items-center">
               <div className="item_icon flex-shrink-0">
                 <i className="fa-solid fa-phone" />
@@ -53,7 +53,7 @@ export default function Header() {
               </div>
             </div>
           </div>
-          <div className="col-6 col-sm-6 col-xl-2">
+          <div className="col-6 col-sm-6 col-md-2 col-xl-2 col-xxl-2">
             <div className="logo text-center align-items-center">
               <Link href="/">
                 <a className="justify-content-center d-block mx-auto">
@@ -68,7 +68,7 @@ export default function Header() {
               </Link>
             </div>
           </div>
-          <div className="col-12 col-xl-8 justify-content-center menu">
+          <div className="col-12 col-sm-12 col-md-7 col-xl-8 justify-content-center menu">
             <nav ref={ref} className="navbar navbar-expand-lg">
               <div className="container-fluid">
                 <button

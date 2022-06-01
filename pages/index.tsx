@@ -1,16 +1,15 @@
 import React from "react";
-import Header from "@/components/FrontEnd/Header";
+import Layout from "@/components/FrontEnd/Layout";
 
 type Props = {};
 
 export const Index = ({}: Props) => {
   return (
-    <div className="wrapper">
-      <Header />
+    <Layout>
       <div className="content_main">
         <p>1234</p>
       </div>
-    </div>
+    </Layout>
   );
 };
 
