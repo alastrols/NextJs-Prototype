@@ -70,7 +70,7 @@ export const Room = () => {
             start_time: start_time.getTime(),
             end_time: end_time.getTime(),
             canMove: false,
-            canResize: false,
+            canResize: true,
             canChangeGroup: false,
             itemProps: {
               "data-custom-attribute": "Random content",

@@ -1,10 +1,14 @@
 import { UserData } from "./user.model";
 
 export interface SignIn {
+  [x: string]: any;
+  status: string;
   result: string;
   token: string;
   error?: string;
+  fullname: string;
   user: UserData;
+  data: any;
 }
 
 export interface SignUp {
@@ -14,6 +18,7 @@ export interface SignUp {
 }
 
 export interface GetSession {
+  data: any;
   result: string;
   error?: string;
   user?: UserData;
