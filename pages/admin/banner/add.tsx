@@ -1,5 +1,8 @@
 import Layout from "@/components/BackEnd/Layout/Layout";
 import withAuth from "@/components/BackEnd/withAuth";
+import { ADMIN_ACCESS_TOKEN_KEY } from "@/utils/constant";
+import type { NextApiRequest, NextApiResponse } from "next";
+import cookie from "cookie";
 import React, { useEffect, useState } from "react";
 import { addBanner } from "@/services/admin/adminService";
 import "react-calendar-timeline/lib/Timeline.css";
@@ -69,7 +72,6 @@ const Add = ({}: Props) => {
         <Formik
           initialValues={initialValues}
           onSubmit={async (values, { setSubmitting }) => {
-            console.log(values);
             const value_date = moment(dateSend).toDate();
             const day = value_date.getDate();
             const month = value_date.getMonth() + 1;

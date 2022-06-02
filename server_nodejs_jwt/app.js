@@ -123,6 +123,38 @@ app.get("/api/admin/profile", verifyToken, async (req, res) => {
   });
 });
 
+app.get("/api/image/:image_path/:img_name", function (req, res) {
+  var img_name = req.params.img_name;
+  var image_path = req.params.image_path;
+  var filepath = __dirname + "/upload/" + image_path + "/" + img_name;
+  res.sendFile(filepath);
+});
+
+app.get("/api/admin/banner", verifyToken, async (req, res) => {
+  const [data, result] = await connection.query(
+    `SELECT * FROM banner ORDER BY arr ASC`
+  );
+  res.json({
+    status: "success",
+    data: data,
+  });
+});
+
+app.get("/api/admin/banner/search", verifyToken, async (req, res) => {
+  const { keyword } = req.query;
+  const [data, result] = await connection.query(
+    `SELECT * FROM banner WHERE banner_name LIKE '%${keyword}%'
+     OR post_date LIKE '%${keyword}%'
+     OR status LIKE '%${keyword}%' 
+     OR created_at LIKE '%${keyword}%' 
+     ORDER BY arr ASC`
+  );
+  res.json({
+    status: "success",
+    data: data,
+  });
+});
+
 app.post("/api/admin/banner/add", verifyToken, (req, res) => {
   fields = req.body.fields;
   files = req.body.files;
@@ -139,12 +171,42 @@ app.post("/api/admin/banner/add", verifyToken, (req, res) => {
   var newpath =
     __dirname + "/upload/banner/" + newname.toString() + "." + extension;
   const banner = newname.toString() + "." + extension;
+
   fs.move(oldpath, newpath, async function (err) {
+    const [result] = await connection.query(
+      "SELECT MAX(arr) AS 'arr' FROM banner"
+    );
+    var arr = 0;
+    if (result.length > 0) {
+      arr = result[0].arr + 1;
+    }
     await connection.query(
-      `INSERT INTO banner (banner_name, post_date, original_name, banner, status, user_id) VALUES ("${banner_name}", "${post_date}", "${original_name}", "${banner}", "${status}", "${user_id}")`
+      `INSERT INTO banner (banner_name, post_date, original_name, banner, status, user_id, arr) VALUES ("${banner_name}", "${post_date}", "${original_name}", "${banner}", "${status}", "${user_id}", "${arr}")`
     );
 
     res.json({ status: "success" });
+  });
+});
+
+app.delete("/api/admin/banner/delete", verifyToken, async (req, res) => {
+  const { id } = req.query;
+  await connection.query(`DELETE FROM banner WHERE banner_id = ${id}`);
+  res.json({
+    status: "success",
+  });
+});
+
+app.post("/api/admin/banner/sortable", function (req, res) {
+  var arr = req.body;
+
+  arr.forEach(function (value, key) {
+    connection.query("UPDATE banner SET arr=? WHERE banner_id = ?", [
+      key,
+      value.banner_id,
+    ]);
+  });
+  res.json({
+    status: "success",
   });
 });
 

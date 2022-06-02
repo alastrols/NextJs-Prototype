@@ -18,16 +18,22 @@ import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
-
+// import {
+//   getBanner,
+//   deleteProduct,
+//   deleteAllProduct,
+//   productSelector,
+// } from "@/store/slices/productSlice";
 import {
-  getProducts,
-  deleteProduct,
-  deleteAllProduct,
-  productSelector,
-} from "@/store/slices/productSlice";
+  getBanner,
+  bannerSelector,
+  deleteBanner,
+  deleteAllBanner,
+  sortableBanner,
+} from "@/store/slices/admin/bannerSlice";
 import { useAppDispatch } from "@/store/store";
 import { useSelector } from "react-redux";
-import { ProductData } from "@/models/product.model";
+import { BannerData } from "@/models/banner.model";
 import Image from "next/image";
 import { productImageURL, getBase64 } from "@/utils/commonUtil";
 import Zoom from "react-medium-image-zoom";
@@ -43,6 +49,8 @@ import { Button, Fab, TextField } from "@mui/material";
 import * as Excel from "exceljs";
 import { saveAs } from "file-saver";
 import axios, { AxiosResponse } from "axios";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
     return -1;
@@ -88,7 +96,7 @@ interface EnhancedTableProps {
   numSelected: number;
   onRequestSort: (
     event: React.MouseEvent<unknown>,
-    property: keyof ProductData
+    property: keyof BannerData
   ) => void;
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
   order: Order;
@@ -101,17 +109,19 @@ interface EnhancedTableToolbarProps {
   valSelected: any;
 }
 
+// type Props = {};
 type Props = {};
+
 interface HeadCell {
   disablePadding: boolean;
-  id: keyof ProductData;
+  id: keyof BannerData;
   label: string;
   numeric: boolean;
 }
 
-export const Stock = ({}: Props) => {
+export const Banner = ({}: Props) => {
   const [order, setOrder] = React.useState<Order>("asc");
-  const [orderBy, setOrderBy] = React.useState<keyof ProductData>("name");
+  const [orderBy, setOrderBy] = React.useState<keyof BannerData>("arr");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
@@ -119,9 +129,9 @@ export const Stock = ({}: Props) => {
   const [ids, setIds] = React.useState<Array<number>>([]);
   const [searched, setSearched] = React.useState<string>("");
 
-  const productList = useSelector(productSelector);
+  const bannerList = useSelector(bannerSelector);
   // const [rows, setRows] = React.useState(productList ?? []);
-  const rows = productList ?? [];
+  const rows = bannerList ?? [];
 
   // const rows = productList ?? [];
   const dispatch = useAppDispatch();
@@ -143,7 +153,7 @@ export const Stock = ({}: Props) => {
       if (result.isConfirmed) {
         Swal.fire("Deleted!", "Your data has been deleted.", "success").then(
           function () {
-            dispatch(deleteAllProduct(id));
+            dispatch(deleteAllBanner(id));
             setSelected([]);
           }
         );
@@ -164,13 +174,37 @@ export const Stock = ({}: Props) => {
       if (result.isConfirmed) {
         Swal.fire("Deleted!", "Your data has been deleted.", "success").then(
           function () {
-            dispatch(deleteProduct(id));
+            dispatch(deleteBanner(id));
             setSelected([]);
           }
         );
       }
     });
   };
+
+  // Drag and Drop
+  const onDragEnd = (result: any) => {
+    if (!result.destination) {
+      return;
+    }
+
+    let movedItems: any = reorder(
+      rows,
+      result.source.index,
+      result.destination.index
+    );
+    dispatch(sortableBanner(movedItems));
+    dispatch(getBanner());
+  };
+
+  const reorder = (list: any, startIndex: any, endIndex: any) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+
+    return result;
+  };
+  // Drag and Drop
 
   const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
     const { numSelected, valSelected } = props;
@@ -225,7 +259,7 @@ export const Stock = ({}: Props) => {
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
-    property: keyof ProductData
+    property: keyof BannerData
   ) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
@@ -234,7 +268,7 @@ export const Stock = ({}: Props) => {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelecteds: any = rows.map((n) => n.id);
+      const newSelecteds: any = rows.map((n) => n.banner_id);
       setSelected(newSelecteds);
       return;
     }
@@ -279,67 +313,36 @@ export const Stock = ({}: Props) => {
 
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
 
-  // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
-  // ##################################################
-  // ################# Start Dispatch #################
-  // ##################################################
-
   React.useEffect(() => {
-    dispatch(getProducts());
+    dispatch(getBanner());
   }, [dispatch]);
 
   React.useEffect(() => {
-    dispatch(getProducts(searched));
+    dispatch(getBanner(searched));
   }, [dispatch, searched]);
-
-  //   interface Window {
-  //     Image: {
-  //         prototype: HTMLImageElement;
-  //         new (): HTMLImageElement;
-  //     };
-  // }
-  // const getBase64Image = (url:any) => {
-  //   const img = new window.Image()
-  //   img.setAttribute('crossOrigin', 'anonymous');
-  //   img.onload = () => {
-  //     const canvas = document.createElement("canvas");
-  //     canvas.width = img.width;
-  //     canvas.height = img.height;
-  //     const ctx:any = canvas.getContext("2d");
-  //     ctx.drawImage(img, 0, 0);
-  //     const dataURL = canvas.toDataURL("image/png");
-  //     // console.log(dataURL)
-  //     return dataURL;
-  //   }
-  //   img.src = url
-  // }
 
   async function saveAsExcel() {
     const wb = new Excel.Workbook();
 
     const ws = wb.addWorksheet();
 
-    // ws.columns = [
-    //   { header: "Name", key: "name", width: 30 },
-    //   { header: "Price", key: "price", width: 10 },
-    //   { header: "Stock", key: "stock", width: 10 },
-    //   { header: "CreatedAt", key: "createAt", width: 25 },
-    // ];
     ws.columns = [
-      { width: 55 },
+      { width: 5 },
+      { width: 20 },
       { width: 18 },
       { width: 10 },
       { width: 10 },
-      { width: 35 },
+      { width: 20 },
     ];
     const row: any = ws.addRow([
-      "Name",
-      "Image",
-      "Price",
-      "Stock",
+      "No",
+      "Banner Name",
+      "Banner",
+      "Post Date",
+      "Status",
       "CreatedAt",
     ]);
     row.font = {
@@ -349,16 +352,8 @@ export const Stock = ({}: Props) => {
     let position: number = 2;
 
     await Promise.all(
-      rows.map(async (item): Promise<any> => {
-        // let axiosResponse: any = await axios(productImageURL(item.image), {
-        //   responseType: "arraybuffer",
-        // });
-        // const url =
-        //   "https://raw.githubusercontent.com/OfficeDev/office-scripts-docs/master/docs/images/git-octocat.png";
-        // const url = "https://www.aath-share.com/upload/catalog/1653639084522___test3.png";
-        const url = `${process.env.NEXT_PUBLIC_BASE_URL_GET_IMAGE}/${item.image}`;
-        // const url  = productImageURL(item.image);
-
+      rows.map(async (item, index): Promise<any> => {
+        const url = productImageURL("banner", item.banner);
         let axiosResponse: any = await axios.get<
           any,
           AxiosResponse<ArrayBuffer>
@@ -366,14 +361,14 @@ export const Stock = ({}: Props) => {
           responseType: "arraybuffer",
         });
         const content = ws.addRow([
-          item.name,
+          index + 1,
+          item.banner_name,
           "",
-          item.price,
-          item.stock,
-          item.createdAt,
+          item.post_date,
+          item.status,
+          item.created_at,
         ]);
         content.height = 100;
-        // console.log(item.image);
 
         const dataBuffer = Buffer.from(axiosResponse.data, "binary").toString(
           "base64"
@@ -382,75 +377,54 @@ export const Stock = ({}: Props) => {
           base64: dataBuffer,
           extension: "png",
         });
-        ws.addImage(imageID, `B${position}:B${position}`);
+        ws.addImage(imageID, `C${position}:C${position}`);
 
         position++;
       })
     );
-    // const url = getBase64Image('https://uploads.sitepoint.com/wp-content/uploads/2015/12/1450377118cors3.png')
-    //   console.log(url)
-    // rows.map(async (item) => {
-
-    //   const content = ws.addRow([
-    //     item.name,
-    //     item.image,
-    //     item.price,
-    //     item.stock,
-    //     item.createdAt,
-    //   ]);
-    //   content.height = 100;
-    //   // console.log(item.image);
-
-    //   // const dataBuffer = Buffer.from(axiosResponse.data, "binary").toString(
-    //   //   "base64"
-    //   // );
-    //   var imageID = wb.addImage({
-    //     base64: url,
-    //     extension: "png",
-    //   });
-    //   ws.addImage(imageID, `B${position}:B${position}`);
-
-    //   position++;
-    // });
-
-    // ws.eachRow(function (row, rowNumber) {
-    //   row.alignment = { vertical: "middle", horizontal: "center" };
-    // });
-
+    ws.eachRow(function (row, rowNumber) {
+      row.alignment = { vertical: "middle", horizontal: "center" };
+    });
     const buf = await wb.xlsx.writeBuffer();
-    await saveAs(new Blob([buf]), "stock.xlsx");
+    await saveAs(new Blob([buf]), "banner.xlsx");
   }
 
   const headCells: readonly HeadCell[] = [
     {
-      id: "name",
+      id: "banner_id",
+      numeric: false,
+      disablePadding: false,
+      label: "No",
+    },
+    {
+      id: "banner_name",
       numeric: false,
       disablePadding: false,
       label: "Name",
     },
     {
-      id: "image",
+      id: "banner",
       numeric: false,
       disablePadding: false,
       label: "Image",
     },
     {
-      id: "price",
+      id: "post_date",
       numeric: true,
       disablePadding: false,
-      label: "Price",
+      label: "Post Date",
     },
     {
-      id: "stock",
+      id: "status",
       numeric: true,
       disablePadding: false,
-      label: "Stock",
+      label: "Status",
     },
     {
-      id: "createdAt",
-      numeric: false,
+      id: "created_at",
+      numeric: true,
       disablePadding: false,
-      label: "CreatedAt",
+      label: "Created At",
     },
   ];
 
@@ -464,7 +438,7 @@ export const Stock = ({}: Props) => {
       onRequestSort,
     } = props;
     const createSortHandler =
-      (property: keyof ProductData) => (event: React.MouseEvent<unknown>) => {
+      (property: keyof BannerData) => (event: React.MouseEvent<unknown>) => {
         onRequestSort(event, property);
       };
 
@@ -487,41 +461,8 @@ export const Stock = ({}: Props) => {
               key={headCell.id}
               align={headCell.numeric ? "center" : "center"}
               padding={headCell.disablePadding ? "none" : "normal"}
-              // sortDirection={orderBy === headCell.id ? order : false}
             >
               {headCell.label}
-              {/* {headCell.id === "image" ? (
-                `${headCell.label}`
-              ) : (
-                <TableSortLabel
-                  active={orderBy === headCell.id}
-                  direction={orderBy === headCell.id ? order : "asc"}
-                  onClick={createSortHandler(headCell.id)}
-                >
-                  {headCell.label}
-                  {orderBy === headCell.id ? (
-                    <Box component="span" sx={visuallyHidden}>
-                      {order === "desc"
-                        ? "sorted descending"
-                        : "sorted ascending"}
-                    </Box>
-                  ) : null}
-                </TableSortLabel>
-              )} */}
-              {/* <TableSortLabel
-                active={orderBy === headCell.id}
-                direction={orderBy === headCell.id ? order : "asc"}
-                onClick={createSortHandler(headCell.id)}
-              >
-                {headCell.label}
-                {orderBy === headCell.id ? (
-                  <Box component="span" sx={visuallyHidden}>
-                    {order === "desc"
-                      ? "sorted descending"
-                      : "sorted ascending"}
-                  </Box>
-                ) : null}
-              </TableSortLabel> */}
             </TableCell>
           ))}
           <TableCell align="center" padding="normal">
@@ -540,6 +481,7 @@ export const Stock = ({}: Props) => {
         label="Search..."
         onChange={(e: React.ChangeEvent<any>) => {
           e.preventDefault();
+          console.log(e.target.value);
           setSearched(e.target.value);
         }}
       />
@@ -583,116 +525,153 @@ export const Stock = ({}: Props) => {
                 onRequestSort={handleRequestSort}
                 rowCount={rows.length}
               />
-              <TableBody>
-                {/* if you don't need to support IE11, you can replace the `stableSort` call with:
+              <DragDropContext onDragEnd={onDragEnd} key={0}>
+                <Droppable droppableId="droppable" key={0}>
+                  {(provided, snapshot) => (
+                    <TableBody
+                      key={0}
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      // style={getListStyle(snapshot.isDraggingOver)}
+                    >
+                      {/* if you don't need to support IE11, you can replace the `stableSort` call with:
               rows.slice().sort(getComparator(order, orderBy)) */}
 
-                {/* {stableSort(rows, getComparator(order, orderBy)) */}
-                {rows
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((row, index) => {
-                    const isItemSelected = isSelected(row.id);
-                    const labelId = `enhanced-table-checkbox-${index}`;
-
-                    return (
-                      <TableRow
-                        hover
-                        onClick={(event) => handleClick(event, row.id)}
-                        role="checkbox"
-                        aria-checked={isItemSelected}
-                        tabIndex={-1}
-                        key={row.id}
-                        selected={isItemSelected}
-                      >
-                        <TableCell align="center">
-                          <Checkbox
-                            color="primary"
-                            checked={isItemSelected}
-                            value={row.id}
-                            // checked={ids.includes(row.calories) ? true : false}
-                            inputProps={{
-                              "aria-labelledby": labelId,
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell align="center">
-                          <Typography variant="body1">{row.name}</Typography>
-                        </TableCell>
-                        <TableCell align="center">
-                          {/* <Zoom> */}
-
-                          <Image
-                            width={100}
-                            height={100}
-                            objectFit="cover"
-                            alt="product image"
-                            src={productImageURL(row.image)}
-                            style={{ borderRadius: "5%" }}
-                          />
-                          {/* </Zoom> */}
-                        </TableCell>
-                        <TableCell align="center">
-                          <Typography variant="body1">
-                            <NumberFormat
-                              value={row.price}
-                              displayType={"text"}
-                              thousandSeparator={true}
-                              decimalScale={2}
-                              fixedDecimalScale={true}
-                            />
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="center">
-                          <Typography variant="body1">{row.stock}</Typography>
-                        </TableCell>
-                        <TableCell align="center">
-                          <Typography variant="body1">
-                            <Moment format="DD/MM/YYYY HH:mm">
-                              {row.createdAt}
-                            </Moment>
-                          </Typography>
-                        </TableCell>
-
-                        <TableCell align="center">
-                          <Stack
-                            direction="row"
-                            alignItems="center"
-                            justifyContent="center"
-                            spacing={0}
-                          >
-                            <IconButton
-                              color="primary"
-                              aria-label="edit"
-                              size="large"
-                              onClick={() =>
-                                router.push("/stock/edit?id=" + row.id)
-                              }
+                      {/* {stableSort(rows, getComparator(order, orderBy)) */}
+                      {rows
+                        .slice(
+                          page * rowsPerPage,
+                          page * rowsPerPage + rowsPerPage
+                        )
+                        .map((row, index) => {
+                          const isItemSelected = isSelected(row.banner_id);
+                          const labelId = `enhanced-table-checkbox-${index}`;
+                          return (
+                            <Draggable
+                              key={row.banner_id}
+                              draggableId={"q-" + row.banner_id}
+                              index={index}
                             >
-                              <EditIcon fontSize="inherit" />
-                            </IconButton>
-                            <IconButton
-                              color="error"
-                              aria-label="delete"
-                              size="large"
-                              onClick={() => Delete(row.id)}
-                            >
-                              <DeleteIcon fontSize="inherit" />
-                            </IconButton>
-                          </Stack>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                {emptyRows > 0 && (
-                  <TableRow
-                    style={{
-                      height: (dense ? 33 : 53) * emptyRows,
-                    }}
-                  >
-                    <TableCell colSpan={6} />
-                  </TableRow>
-                )}
-              </TableBody>
+                              {(provided, snapshot) => (
+                                <TableRow
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  hover
+                                  onClick={(event) =>
+                                    handleClick(event, row.banner_id)
+                                  }
+                                  role="checkbox"
+                                  aria-checked={isItemSelected}
+                                  tabIndex={-1}
+                                  key={row.banner_id}
+                                  selected={isItemSelected}
+                                >
+                                  <TableCell align="center">
+                                    <Checkbox
+                                      color="primary"
+                                      checked={isItemSelected}
+                                      value={row.banner_id}
+                                      // checked={ids.includes(row.calories) ? true : false}
+                                      inputProps={{
+                                        "aria-labelledby": labelId,
+                                      }}
+                                    />
+                                  </TableCell>
+
+                                  <TableCell align="center">
+                                    <Typography variant="body1">
+                                      {index + 1}
+                                    </Typography>
+                                  </TableCell>
+
+                                  <TableCell align="center">
+                                    <Typography variant="body1">
+                                      {row.banner_name}
+                                    </Typography>
+                                  </TableCell>
+                                  <TableCell align="center">
+                                    {/* <Zoom> */}
+
+                                    <Image
+                                      width={100}
+                                      height={100}
+                                      objectFit="cover"
+                                      alt="banner image"
+                                      src={productImageURL(
+                                        "banner",
+                                        row.banner
+                                      )}
+                                      style={{ borderRadius: "5%" }}
+                                    />
+                                    {/* </Zoom> */}
+                                  </TableCell>
+
+                                  <TableCell align="center">
+                                    <Typography variant="body1">
+                                      {row.post_date}
+                                    </Typography>
+                                  </TableCell>
+
+                                  <TableCell align="center">
+                                    <Typography variant="body1">
+                                      {row.status}
+                                    </Typography>
+                                  </TableCell>
+
+                                  <TableCell align="center">
+                                    <Typography variant="body1">
+                                      {row.created_at}
+                                    </Typography>
+                                  </TableCell>
+
+                                  <TableCell align="center">
+                                    <Stack
+                                      direction="row"
+                                      alignItems="center"
+                                      justifyContent="center"
+                                      spacing={0}
+                                    >
+                                      <IconButton
+                                        color="primary"
+                                        aria-label="edit"
+                                        size="large"
+                                        onClick={() =>
+                                          router.push(
+                                            "/banner/edit?id=" + row.banner_id
+                                          )
+                                        }
+                                      >
+                                        <EditIcon fontSize="inherit" />
+                                      </IconButton>
+                                      <IconButton
+                                        color="error"
+                                        aria-label="delete"
+                                        size="large"
+                                        onClick={() => Delete(row.banner_id)}
+                                      >
+                                        <DeleteIcon fontSize="inherit" />
+                                      </IconButton>
+                                    </Stack>
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </Draggable>
+                          );
+                        })}
+                      {emptyRows > 0 && (
+                        <TableRow
+                          style={{
+                            height: (dense ? 33 : 53) * emptyRows,
+                          }}
+                        >
+                          <TableCell colSpan={6} />
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  )}
+                </Droppable>
+              </DragDropContext>
             </Table>
           </TableContainer>
           <TablePagination
@@ -714,4 +693,4 @@ export const Stock = ({}: Props) => {
   );
 };
 
-export default withAuth(Stock);
+export default withAuth(Banner);
