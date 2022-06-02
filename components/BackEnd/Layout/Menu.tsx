@@ -54,11 +54,18 @@ export default function Menu({ open, onDrawerClose }: MenuProps) {
     >
       <DrawerHeader>
         <Stack direction="row" alignItems="center">
-          <Image
+          {/* <Image
             src="/static/img/cm_logo.png"
             width={200}
             height={40}
             objectFit="contain"
+            alt="logo"
+          /> */}
+          <Image
+            src="/static/images/logo.png"
+            width={200}
+            height={68}
+            objectFit="cover"
             alt="logo"
           />
           <IconButton onClick={onDrawerClose}>

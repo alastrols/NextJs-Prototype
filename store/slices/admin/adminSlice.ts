@@ -3,7 +3,7 @@ import { UserData } from "@/models/user.model";
 import { RootState } from "@/store/store";
 import { responseSymbol } from "next/dist/server/web/spec-compliant/fetch-event";
 import * as adminService from "@/services/admin/adminService";
-import httpClientAdmin from "@/utils/httpClient";
+import { httpClientAdmin } from "@/utils/httpClient";
 import { AxiosRequestConfig } from "axios";
 import Router from "next/router";
 
@@ -55,11 +55,11 @@ export const login = createAsyncThunk(
     }
 
     // set access token
-    httpClientAdmin.interceptors.request.use((config?: AxiosRequestConfig) => {
+    httpClientAdmin.interceptors.request.use((config: AxiosRequestConfig) => {
       if (config && config.headers) {
-        config.headers["AdminAuthorization"] = `Bearer ${response.data.token}`;
+        config.headers["admin-access-token"] = `Bearer ${response.data.token}`;
       }
-
+      console.log(config);
       return config;
     });
     return response;
@@ -78,16 +78,15 @@ export const getAdminSession = createAsyncThunk(
 
     // set access token
     if (response) {
-      httpClientAdmin.interceptors.request.use(
-        (config?: AxiosRequestConfig) => {
-          if (config && config.headers && response.user) {
-            config.headers[
-              "admin-access-token"
-            ] = `Bearer ${response.user?.token}`;
-          }
-          return config;
+      httpClientAdmin.interceptors.request.use((config: AxiosRequestConfig) => {
+        if (config && config.headers && response.data.token) {
+          config.headers[
+            "admin-access-token"
+          ] = `Bearer ${response.data.token}`;
         }
-      );
+
+        return config;
+      });
     }
     return response;
   }

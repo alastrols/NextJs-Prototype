@@ -12,3 +12,4 @@ export const DISPLAY_MODE_TEXT = "TEXT";
 export const DISPLAY_MODE_IMAGE = "IMAGE";
 export const HTTP_METHOD_GET = "GET";
 export const HTTP_METHOD_POST = "POST";
+export const HTTP_METHOD_DELETE = "DELETE";

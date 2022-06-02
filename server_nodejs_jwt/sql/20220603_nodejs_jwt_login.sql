@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 01, 2022 at 10:12 PM
+-- Generation Time: Jun 02, 2022 at 10:07 PM
 -- Server version: 10.4.11-MariaDB
 -- PHP Version: 7.4.6
 
@@ -20,6 +20,34 @@ SET time_zone = "+00:00";
 --
 -- Database: `nodejs_jwt_login`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `banner`
+--
+
+CREATE TABLE `banner` (
+  `banner_id` int(11) NOT NULL,
+  `arr` int(11) NOT NULL,
+  `banner_name` text COLLATE utf8_unicode_ci NOT NULL,
+  `post_date` date NOT NULL,
+  `banner` text COLLATE utf8_unicode_ci NOT NULL,
+  `original_name` text COLLATE utf8_unicode_ci NOT NULL,
+  `status` enum('Show','Hide') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Show',
+  `user_id` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Dumping data for table `banner`
+--
+
+INSERT INTO `banner` (`banner_id`, `arr`, `banner_name`, `post_date`, `banner`, `original_name`, `status`, `user_id`, `created_at`) VALUES
+(33, 0, 'TEST', '2022-06-03', '1654191920532.jpg', 'F1catalog.jpg', 'Show', 1, '2022-06-02 20:05:42'),
+(36, 2, 'TEST', '2022-06-03', '1654191920532.jpg', 'F1catalog.jpg', 'Show', 1, '2022-06-02 20:00:17'),
+(37, 1, 'TEST2', '2022-06-04', '1654192812028.jpg', 'F1catalog.jpg', 'Show', 1, '2022-06-02 20:05:42'),
+(38, 3, 'TEST2', '2022-06-04', '1654192812056.jpg', 'F1catalog.jpg', 'Hide', 1, '2022-06-02 20:00:17');
 
 -- --------------------------------------------------------
 
@@ -48,6 +76,12 @@ INSERT INTO `user` (`user_id`, `fullname`, `username`, `password`, `created_at`)
 --
 
 --
+-- Indexes for table `banner`
+--
+ALTER TABLE `banner`
+  ADD PRIMARY KEY (`banner_id`);
+
+--
 -- Indexes for table `user`
 --
 ALTER TABLE `user`
@@ -56,6 +90,12 @@ ALTER TABLE `user`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `banner`
+--
+ALTER TABLE `banner`
+  MODIFY `banner_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT for table `user`
