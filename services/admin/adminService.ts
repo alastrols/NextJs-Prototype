@@ -2,6 +2,7 @@ import { SignUp, SignIn, GetSession } from "@/models/auth.model";
 import { httpClientAdmin } from "@/utils/httpClient";
 import { ADMIN_ACCESS_TOKEN_KEY } from "@/utils/constant";
 import { BannerData } from "@/models/banner.model";
+import axios, { AxiosRequestConfig } from "axios";
 
 type signProps = {
   username: string;
@@ -37,6 +38,7 @@ export const getSession = async (): Promise<GetSession> => {
   const response = await httpClientAdmin.get("/auth/adminsession", {
     baseURL: process.env.NEXT_PUBLIC_BASE_URL_LOCAL_API,
   });
+
   return response.data;
 };
 
@@ -55,6 +57,7 @@ export const addBanner = async (data: FormData): Promise<any> => {
       baseURL: process.env.NEXT_PUBLIC_BASE_URL_LOCAL_API,
     }
   );
+
   return response.data;
 };
 
@@ -96,6 +99,6 @@ export const deleteAllBanner = async (id: any): Promise<void> => {
 };
 
 export const postSortable = async (data: any): Promise<void> => {
-  const response = await httpClientAdmin.post("/banner/sortable", data);
+  const response = await httpClientAdmin.post(`/banner/sortable`, data);
   return response.data;
 };

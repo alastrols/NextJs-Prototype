@@ -128,6 +128,7 @@ export const Banner = ({}: Props) => {
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [ids, setIds] = React.useState<Array<number>>([]);
   const [searched, setSearched] = React.useState<string>("");
+  const [sorted, setSorted] = React.useState<Array<string>>([]);
 
   const bannerList = useSelector(bannerSelector);
   // const [rows, setRows] = React.useState(productList ?? []);
@@ -194,7 +195,7 @@ export const Banner = ({}: Props) => {
       result.destination.index
     );
     dispatch(sortableBanner(movedItems));
-    dispatch(getBanner());
+    setSorted(movedItems);
   };
 
   const reorder = (list: any, startIndex: any, endIndex: any) => {
@@ -323,6 +324,10 @@ export const Banner = ({}: Props) => {
   React.useEffect(() => {
     dispatch(getBanner(searched));
   }, [dispatch, searched]);
+
+  React.useEffect(() => {
+    dispatch(getBanner());
+  }, [dispatch, sorted]);
 
   async function saveAsExcel() {
     const wb = new Excel.Workbook();

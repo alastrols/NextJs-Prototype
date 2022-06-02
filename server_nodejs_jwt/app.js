@@ -188,7 +188,7 @@ app.post("/api/admin/banner/add", verifyToken, (req, res) => {
   });
 });
 
-app.delete("/api/admin/banner/delete", verifyToken, async (req, res) => {
+app.delete("/api/admin/banner/delete", async (req, res) => {
   const { id } = req.query;
   await connection.query(`DELETE FROM banner WHERE banner_id = ${id}`);
   res.json({
@@ -196,9 +196,8 @@ app.delete("/api/admin/banner/delete", verifyToken, async (req, res) => {
   });
 });
 
-app.post("/api/admin/banner/sortable", function (req, res) {
+app.post("/api/admin/banner/sortable", verifyToken, function (req, res) {
   var arr = req.body;
-
   arr.forEach(function (value, key) {
     connection.query("UPDATE banner SET arr=? WHERE banner_id = ?", [
       key,

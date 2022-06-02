@@ -9,6 +9,7 @@ import { clearCookie, setCookie } from "@/utils/cookiesUtil";
 import httpClient, { httpClientAdmin } from "@/utils/httpClient";
 import type { NextApiRequest, NextApiResponse } from "next";
 import cookie from "cookie";
+import { AxiosRequestConfig } from "axios";
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   const action = req.query["nextAuth"][0];
@@ -36,6 +37,7 @@ async function signin(req: NextApiRequest, res: NextApiResponse<any>) {
     const response = await httpClient.post(`/authen/login`, req.body);
 
     const { token } = response.data;
+
     setCookie(res, ACCESS_TOKEN_KEY, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV !== "development",
