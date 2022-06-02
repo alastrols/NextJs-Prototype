@@ -123,32 +123,28 @@ app.get("/api/admin/profile", verifyToken, async (req, res) => {
   });
 });
 
-app.post("/api/admin/banner/add", (req, res) => {
-  let form = new formidable.IncomingForm();
+app.post("/api/admin/banner/add", verifyToken, (req, res) => {
+  fields = req.body.fields;
+  files = req.body.files;
 
-  form.parse(req, (error, fields, files) => {
-    const banner_name = fields.banner_name;
-    const post_date = fields.post_date;
-    const status = fields.status;
+  const banner_name = fields.banner_name;
+  const post_date = fields.post_date;
+  const status = fields.status;
+  const { user_id } = req;
+  var newname = Date.now();
+  var oldpath = files.banner.filepath;
+  var extension = files.banner.originalFilename.split(".").pop().toLowerCase();
+  var original_name =
+    files.banner.originalFilename.split(".")[0] + "." + extension;
+  var newpath =
+    __dirname + "/upload/banner/" + newname.toString() + "." + extension;
+  const banner = newname.toString() + "." + extension;
+  fs.move(oldpath, newpath, async function (err) {
+    await connection.query(
+      `INSERT INTO banner (banner_name, post_date, original_name, banner, status, user_id) VALUES ("${banner_name}", "${post_date}", "${original_name}", "${banner}", "${status}", "${user_id}")`
+    );
 
-    var newname = Date.now();
-    var oldpath = files.banner.filepath;
-    var extension = files.banner.originalFilename
-      .split(".")
-      .pop()
-      .toLowerCase();
-    var original_name =
-      files.banner.originalFilename.split(".")[0] + "." + extension;
-    var newpath =
-      __dirname + "/upload/banner/" + newname.toString() + "." + extension;
-    const banner = newname.toString() + "." + extension;
-    fs.move(oldpath, newpath, async function (err) {
-      await connection.query(
-        `INSERT INTO banner (banner_name, post_date, original_name, banner, status) VALUES ("${banner_name}", "${post_date}", "${original_name}", "${banner}", "${status}")`
-      );
-
-      res.json({ status: "success" });
-    });
+    res.json({ status: "success" });
   });
 });
 
