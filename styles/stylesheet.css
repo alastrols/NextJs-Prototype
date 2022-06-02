@@ -207,6 +207,111 @@ body {
   color: #1a1e5d;
 }
 
+.banner_content {
+  background-image: url(../public/static/images/bg-banner.jpg);
+  background-repeat: no-repeat;
+  background-size: 100%;
+  padding: 89px 0;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.heading_banner {
+  z-index: 1;
+  position: relative;
+}
+
+.heading_banner h1 {
+  font-size: 50px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.heading_banner .biggest_title {
+  top: 50%;
+  left: -8px;
+  z-index: -1;
+  display: block;
+  line-height: 1.5;
+  font-size: 100px;
+  position: absolute;
+  transform: translateY(-50%);
+  font-family: "Pacifico", cursive;
+  color: rgba(255, 255, 255, 0.05);
+}
+
+.breadcumb-wrapper {
+  overflow: hidden;
+  margin-top: -34px;
+  z-index: 99;
+}
+
+.breadcumb-wrapper .thm-container {
+  position: relative;
+  padding-left: 0;
+  padding-right: 0;
+  max-width: 1170px;
+}
+
+.breadcumb-wrapper ul.breadcumb {
+  background: #ecf2f6 !important;
+  background-color: #ecf2f6 !important;
+  border-top-left-radius: 35px;
+  border-bottom-left-radius: 35px;
+  padding: 0 100px 0 70px;
+  position: relative;
+  display: inline-block;
+  float: right;
+}
+
+.breadcumb-wrapper ul.breadcumb li {
+  display: inline-block;
+  vertical-align: middle;
+  color: #1a1e5d;
+  text-transform: uppercase;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.breadcumb-wrapper ul.breadcumb:after {
+  content: "";
+  width: 1000000px;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 100%;
+  background: #ecf2f6 !important;
+  background-color: #ecf2f6 !important;
+}
+
+.breadcumb-wrapper ul.breadcumb li a:before {
+  position: relative;
+  content: "-";
+  top: 0;
+  transition: 0.5s ease;
+  transform: skew(0deg);
+  z-index: 999;
+  color: #1a1e5d;
+  float: right;
+  margin: 0 0 0 5px;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+  display: none;
+}
+
+.breadcumb-wrapper ul.breadcumb li a,
+.breadcumb-wrapper ul.breadcumb li span {
+  display: block;
+  color: #1a1e5d;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 18px 5px;
+  -webkit-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+  text-transform: uppercase;
+}
+
 @media all and (min-width: 992px) {
   .navbar .nav-item .dropdown-menu {
     display: none;

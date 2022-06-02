@@ -45,8 +45,12 @@ app.post("/login", async function (req, res) {
   }
 });
 
-app.get("/feed", verifyToken, function (req, res) {
-  res.json("success");
+app.get("/feed", async function (req, res) {
+  const [user, result] = await connection.query(
+    `SELECT * FROM user WHERE username = 'admin'`
+  );
+  console.log(user);
+  res.json({ status: "success", user: user });
 });
 
 app.post("/uploads", (req, res) => {
