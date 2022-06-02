@@ -44,3 +44,8 @@ export const logout = async () => {
   });
   return response.data;
 };
+
+export const addBanner = async (data: FormData): Promise<any> => {
+  const response = await httpClientAdmin.post(`/banner/add`, data);
+  return response.data;
+};
