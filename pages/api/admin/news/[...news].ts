@@ -33,16 +33,11 @@ export default async function handler(
     return deleteNews(req, res);
   } else if (req.method === HTTP_METHOD_POST && action === "addNews") {
     return addNews(req, res);
+  } else if (req.method === HTTP_METHOD_GET && action === "getbyid") {
+    return getById(req, res);
+  } else if (req.method === HTTP_METHOD_POST && action === "editNews") {
+    return editNews(req, res);
   }
-
-  // else if (req.method === HTTP_METHOD_GET && action === "get") {
-  //   return getBannerSearch(req, res);
-  // } else if (req.method === HTTP_METHOD_POST && action === "addBanner") {
-  //   return addBanner(req, res);
-  // } else if (req.method === HTTP_METHOD_GET && action === "getbyid") {
-  //   return getById(req, res);
-  // } else if (req.method === HTTP_METHOD_POST && action === "editBanner") {
-  //   return editBanner(req, res);
 }
 
 async function addNews(req: NextApiRequest, res: NextApiResponse<any>) {
@@ -89,33 +84,33 @@ async function getNewsSearch(req: NextApiRequest, res: NextApiResponse<any>) {
     .json({ status: response.data.status, data: response.data.data });
 }
 
-// async function getById(req: NextApiRequest, res: NextApiResponse<any>) {
-//   const cookies = cookie.parse(req.headers.cookie || "");
-//   const accessToken = cookies[ADMIN_ACCESS_TOKEN_KEY];
-//   const { id } = req.query;
-//   const response = await httpClientAdmin.get(`/banner/getbyid?id=${id}`, {
-//     headers: { admin_access_token: `Bearer ${accessToken}` },
-//   });
-//   return res
-//     .status(200)
-//     .json({ status: response.data.status, data: response.data.data });
-// }
+async function getById(req: NextApiRequest, res: NextApiResponse<any>) {
+  const cookies = cookie.parse(req.headers.cookie || "");
+  const accessToken = cookies[ADMIN_ACCESS_TOKEN_KEY];
+  const { id } = req.query;
+  const response = await httpClientAdmin.get(`/news/getbyid?id=${id}`, {
+    headers: { admin_access_token: `Bearer ${accessToken}` },
+  });
+  return res
+    .status(200)
+    .json({ status: response.data.status, data: response.data.data });
+}
 
-// async function editBanner(req: NextApiRequest, res: NextApiResponse<any>) {
-//   const cookies = cookie.parse(req.headers.cookie || "");
-//   const accessToken = cookies[ADMIN_ACCESS_TOKEN_KEY];
+async function editNews(req: NextApiRequest, res: NextApiResponse<any>) {
+  const cookies = cookie.parse(req.headers.cookie || "");
+  const accessToken = cookies[ADMIN_ACCESS_TOKEN_KEY];
 
-//   let form = new formidable.IncomingForm();
-//   const data = await new Promise((resolve, reject) => {
-//     form.parse(req, async (err, fields, files) => {
-//       resolve({ err, fields, files });
-//     });
-//   });
-//   const response = await httpClientAdmin.post(`/banner/edit`, data, {
-//     headers: { admin_access_token: `Bearer ${accessToken}` },
-//   });
-//   return res.status(200).json({ status: response.data.status });
-// }
+  let form = new formidable.IncomingForm();
+  const data = await new Promise((resolve, reject) => {
+    form.parse(req, async (err, fields, files) => {
+      resolve({ err, fields, files });
+    });
+  });
+  const response = await httpClientAdmin.post(`/news/edit`, data, {
+    headers: { admin_access_token: `Bearer ${accessToken}` },
+  });
+  return res.status(200).json({ status: response.data.status });
+}
 
 async function deleteNews(req: NextApiRequest, res: NextApiResponse<any>) {
   const cookies = cookie.parse(req.headers.cookie || "");

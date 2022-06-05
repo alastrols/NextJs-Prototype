@@ -4,7 +4,6 @@ import { ADMIN_ACCESS_TOKEN_KEY } from "@/utils/constant";
 import type { NextApiRequest, NextApiResponse } from "next";
 import cookie from "cookie";
 import React, { useEffect, useState, useRef } from "react";
-import { addNews } from "@/services/admin/adminService";
 import "react-calendar-timeline/lib/Timeline.css";
 import moment from "moment";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
@@ -40,26 +39,41 @@ const { Option } = Select;
 import { useRouter } from "next/router";
 import { productImageURL, getBase64 } from "@/utils/commonUtil";
 import { Editor } from "@tinymce/tinymce-react";
+import { NewsData } from "@/models/news.model";
+import { getNewsId, editNews } from "@/services/admin/adminService";
 
-type Props = {};
+type Props = {
+  news?: NewsData;
+};
 
-const Add = ({}: Props) => {
+const Edit = ({ news }: Props) => {
   const router = useRouter();
   const [dateSend, setDateSend] = React.useState<Date>();
   const initialValues: any = {
-    topic: "",
-    post_date: "",
-    status: "Show",
+    news_id: `${news?.news_id}`,
+    topic: `${news?.topic}`,
+    post_date: `${news?.post_date}`,
+    status: `${news?.status}`,
   };
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<any>(news?.detail);
 
   const showPreviewImage = (values: any) => {
     if (values.file_obj) {
       return (
         <Image
           objectFit="contain"
-          alt="product image"
+          alt="thumbnail image"
           src={values.file_obj}
+          width={100}
+          height={100}
+        />
+      );
+    } else if (news?.thumbnail) {
+      return (
+        <Image
+          objectFit="contain"
+          alt="thumbnail image"
+          src={productImageURL("news", news?.thumbnail)}
           width={100}
           height={100}
         />
@@ -83,6 +97,7 @@ const Add = ({}: Props) => {
             const post_date = year + "-" + month + "-" + day;
 
             let data = new FormData();
+            data.append("news_id", String(values.news_id));
             data.append("topic", String(values.topic));
             data.append("post_date", String(post_date));
             data.append("status", String(values.status));
@@ -94,13 +109,15 @@ const Add = ({}: Props) => {
             } else {
               data.append("detail", "");
             }
-            const response = await addNews(data);
+            const response = await editNews(data);
             if (response.status == "success") {
-              Swal.fire("Success!", "Your news has been added", "success").then(
-                function () {
-                  router.push("/admin/news");
-                }
-              );
+              Swal.fire(
+                "Success!",
+                "Your news has been updated",
+                "success"
+              ).then(function () {
+                router.push("/admin/news");
+              });
             }
             setSubmitting(false);
           }}
@@ -111,9 +128,6 @@ const Add = ({}: Props) => {
             }
             if (!values.post_date) {
               errors.post_date = "* Post Date is required";
-            }
-            if (!values.file) {
-              errors.banner = "* Banner is required";
             }
             return errors;
           }}
@@ -222,7 +236,7 @@ const Add = ({}: Props) => {
                       <Editor
                         apiKey="2s0w71caf8mc5dpcr17pwapuu74ko8mkivvenvzdmvnqyjti"
                         onInit={(evt, editor) => (editorRef.current = editor)}
-                        initialValue=""
+                        initialValue={news?.detail}
                         init={{
                           height: 500,
                           menubar: true,
@@ -293,4 +307,21 @@ const Add = ({}: Props) => {
   );
 };
 
-export default withAuth(Add);
+export default withAuth(Edit);
+
+export const getServerSideProps: GetServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
+  const { id }: any = context.query;
+  if (id) {
+    const news = await getNewsId(id);
+
+    return {
+      props: {
+        news,
+      },
+    };
+  } else {
+    return { props: {} };
+  }
+};

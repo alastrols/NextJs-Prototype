@@ -369,6 +369,54 @@ app.post("/api/admin/news/add", verifyToken, (req, res) => {
   });
 });
 
+app.get("/api/admin/news/getbyid", async (req, res) => {
+  const { id } = req.query;
+  const [data, result] = await connection.query(
+    `SELECT * FROM news WHERE news_id = '${id}'`
+  );
+  res.json({
+    status: "success",
+    data: data,
+  });
+});
+
+app.post("/api/admin/news/edit", verifyToken, async (req, res) => {
+  fields = req.body.fields;
+  files = req.body.files;
+  const news_id = fields.news_id;
+  const topic = fields.topic;
+  const post_date = fields.post_date;
+  const status = fields.status;
+  const detail = fields.detail;
+  const { user_id } = req;
+  await connection.query(
+    "UPDATE news SET topic=?, post_date=?, detail=?, status=? WHERE news_id = ?",
+    [topic, post_date, detail, status, news_id]
+  );
+
+  if (files.thumbnail) {
+    var newname = Date.now();
+    var oldpath = files.thumbnail.filepath;
+    var extension = files.thumbnail.originalFilename
+      .split(".")
+      .pop()
+      .toLowerCase();
+    var original_name =
+      files.thumbnail.originalFilename.split(".")[0] + "." + extension;
+    var newpath =
+      __dirname + "/upload/news/" + newname.toString() + "." + extension;
+    const thumbnail = newname.toString() + "." + extension;
+
+    fs.move(oldpath, newpath, async function (err) {
+      await connection.query(
+        `UPDATE news SET original_name="${original_name}", thumbnail="${thumbnail}" WHERE news_id = ${news_id} `
+      );
+    });
+  }
+
+  res.json({ status: "success" });
+});
+
 app.listen(3001, function () {
   console.log("listening on port : 3001");
 });
