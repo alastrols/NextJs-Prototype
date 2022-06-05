@@ -53,7 +53,7 @@ async function signin(req: NextApiRequest, res: NextApiResponse<any>) {
 async function adminLogin(req: NextApiRequest, res: NextApiResponse<any>) {
   try {
     const response = await httpClientAdmin.post(`/login`, req.body);
-
+    console.log(response);
     const token = response.data.data.token;
 
     setCookie(res, ADMIN_ACCESS_TOKEN_KEY, token, {
