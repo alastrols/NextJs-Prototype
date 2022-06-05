@@ -37,9 +37,17 @@ export const deleteAllBanner = createAsyncThunk(
 export const sortableBanner = createAsyncThunk(
   "banner/sortable",
   async (data: any) => {
-    return await adminService.postSortable(data);
+    return await adminService.postBannerSortable(data);
   }
 );
+
+export const editBanner = createAsyncThunk(
+  "banner/editBanner",
+  async (data: any) => {
+    return await adminService.editBanner(data);
+  }
+);
+
 const bannerSlice = createSlice({
   name: "banner",
   initialState: initialState,

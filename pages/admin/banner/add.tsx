@@ -213,6 +213,14 @@ const Add = ({}: Props) => {
                     >
                       Submit
                     </Button>
+                    <Button
+                      style={{ marginTop: "20px", marginLeft: "20px" }}
+                      type={"primary"}
+                      danger
+                      onClick={() => router.push("/admin/banner")}
+                    >
+                      Back
+                    </Button>
                   </div>
                 </div>
               </div>

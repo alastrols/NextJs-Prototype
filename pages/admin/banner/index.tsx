@@ -643,7 +643,8 @@ export const Banner = ({}: Props) => {
                                         size="large"
                                         onClick={() =>
                                           router.push(
-                                            "/banner/edit?id=" + row.banner_id
+                                            "/admin/banner/edit?id=" +
+                                              row.banner_id
                                           )
                                         }
                                       >

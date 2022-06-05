@@ -98,8 +98,9 @@ async function getAdminSession(req: NextApiRequest, res: NextApiResponse<any>) {
 
     if (accessToken) {
       const response = await httpClientAdmin.get(`/profile`, {
-        headers: { "admin-access-token": `Bearer ${accessToken}` },
+        headers: { admin_access_token: `Bearer ${accessToken}` },
       });
+
       res.json(response.data);
     } else {
       res.json({ result: "error" });

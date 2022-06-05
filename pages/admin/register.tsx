@@ -76,7 +76,7 @@ export const Register = ({}: Props) => {
         <CancelButton
           fullWidth
           variant="contained"
-          onClick={() => router.push("/login")}
+          onClick={() => router.push("/admin/login")}
         >
           Cancel
         </CancelButton>

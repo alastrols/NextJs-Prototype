@@ -55,11 +55,11 @@ export const login = createAsyncThunk(
     }
 
     // set access token
-    httpClientAdmin.interceptors.request.use((config: AxiosRequestConfig) => {
+    httpClientAdmin.interceptors.request.use((config?: AxiosRequestConfig) => {
       if (config && config.headers) {
-        config.headers["admin-access-token"] = `Bearer ${response.data.token}`;
+        config.headers["admin_access_token"] = `Bearer ${response.data.token}`;
       }
-      console.log(config);
+
       return config;
     });
     return response;
@@ -78,15 +78,17 @@ export const getAdminSession = createAsyncThunk(
 
     // set access token
     if (response) {
-      httpClientAdmin.interceptors.request.use((config: AxiosRequestConfig) => {
-        if (config && config.headers && response.data.token) {
-          config.headers[
-            "admin-access-token"
-          ] = `Bearer ${response.data.token}`;
-        }
+      httpClientAdmin.interceptors.request.use(
+        (config?: AxiosRequestConfig) => {
+          if (config && config.headers) {
+            config.headers[
+              "admin_access_token"
+            ] = `Bearer ${response.data.token}`;
+          }
 
-        return config;
-      });
+          return config;
+        }
+      );
     }
     return response;
   }

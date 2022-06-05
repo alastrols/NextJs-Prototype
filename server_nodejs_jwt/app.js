@@ -17,6 +17,32 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 const { getToken, verifyToken } = require("./jwtHandler");
 
+app.post("/api/admin/tinyupload", function (req, res) {
+  let form = new formidable.IncomingForm();
+  form.parse(req, (error, fields, files) => {
+    var newname = Date.now();
+    var oldpath = files.file.filepath;
+    var extension = files.file.originalFilename.split(".").pop().toLowerCase();
+
+    const filename = newname.toString() + "." + extension;
+    var newpath =
+      __dirname +
+      "/upload/tinyupload/" +
+      newname.toString() +
+      "." +
+      files.file.originalFilename.split(".").pop();
+
+    console.log(newpath);
+
+    fs.move(oldpath, newpath, function (err) {
+      res.json({
+        location: filename,
+        alt: files.file.originalFilename.split(".")[0],
+      });
+    });
+  });
+});
+
 app.get("/", function (req, res) {
   res.json("success");
 });
@@ -45,8 +71,9 @@ app.post("/login", async function (req, res) {
   }
 });
 
-app.get("/feed", verifyToken, function (req, res) {
-  res.json("success");
+app.get("/feed", async function (req, res) {
+  const [user, result] = await connection.query(`SELECT * FROM user`);
+  res.json(user);
 });
 
 app.post("/uploads", (req, res) => {
@@ -71,6 +98,7 @@ app.post("/uploads", (req, res) => {
 
 app.post("/api/admin/login", async function (req, res) {
   var username = req.body.username;
+  console.log(username);
   const [user, result] = await connection.query(
     `SELECT * FROM user WHERE username = '${username}'`
   );
@@ -154,6 +182,16 @@ app.get("/api/admin/banner/search", verifyToken, async (req, res) => {
     data: data,
   });
 });
+app.get("/api/admin/banner/getbyid", async (req, res) => {
+  const { id } = req.query;
+  const [data, result] = await connection.query(
+    `SELECT * FROM banner WHERE banner_id = '${id}'`
+  );
+  res.json({
+    status: "success",
+    data: data,
+  });
+});
 
 app.post("/api/admin/banner/add", verifyToken, (req, res) => {
   fields = req.body.fields;
@@ -188,6 +226,41 @@ app.post("/api/admin/banner/add", verifyToken, (req, res) => {
   });
 });
 
+app.post("/api/admin/banner/edit", verifyToken, async (req, res) => {
+  fields = req.body.fields;
+  files = req.body.files;
+  const banner_id = fields.banner_id;
+  const banner_name = fields.banner_name;
+  const post_date = fields.post_date;
+  const status = fields.status;
+  const { user_id } = req;
+
+  await connection.query(
+    `UPDATE banner SET banner_name="${banner_name}", post_date="${post_date}", status="${status}" WHERE banner_id = ${banner_id} `
+  );
+
+  if (files.banner) {
+    var newname = Date.now();
+    var oldpath = files.banner.filepath;
+    var extension = files.banner.originalFilename
+      .split(".")
+      .pop()
+      .toLowerCase();
+    var original_name =
+      files.banner.originalFilename.split(".")[0] + "." + extension;
+    var newpath =
+      __dirname + "/upload/banner/" + newname.toString() + "." + extension;
+    const banner = newname.toString() + "." + extension;
+
+    fs.move(oldpath, newpath, async function (err) {
+      await connection.query(
+        `UPDATE banner SET original_name="${original_name}", banner="${banner}" WHERE banner_id = ${banner_id} `
+      );
+    });
+  }
+
+  res.json({ status: "success" });
+});
 app.delete("/api/admin/banner/delete", async (req, res) => {
   const { id } = req.query;
   await connection.query(`DELETE FROM banner WHERE banner_id = ${id}`);
@@ -198,6 +271,7 @@ app.delete("/api/admin/banner/delete", async (req, res) => {
 
 app.post("/api/admin/banner/sortable", verifyToken, function (req, res) {
   var arr = req.body;
+  console.log(req.headers);
   arr.forEach(function (value, key) {
     connection.query("UPDATE banner SET arr=? WHERE banner_id = ?", [
       key,
@@ -206,6 +280,92 @@ app.post("/api/admin/banner/sortable", verifyToken, function (req, res) {
   });
   res.json({
     status: "success",
+  });
+});
+
+// NEWS
+
+app.get("/api/admin/news", verifyToken, async (req, res) => {
+  const [data, result] = await connection.query(
+    `SELECT * FROM news ORDER BY arr ASC`
+  );
+  res.json({
+    status: "success",
+    data: data,
+  });
+});
+
+app.get("/api/admin/news/search", verifyToken, async (req, res) => {
+  const { keyword } = req.query;
+  const [data, result] = await connection.query(
+    `SELECT * FROM news WHERE topic LIKE '%${keyword}%'
+     OR post_date LIKE '%${keyword}%'
+     OR status LIKE '%${keyword}%' 
+     OR created_at LIKE '%${keyword}%' 
+     ORDER BY arr ASC`
+  );
+  res.json({
+    status: "success",
+    data: data,
+  });
+});
+
+app.delete("/api/admin/news/delete", async (req, res) => {
+  const { id } = req.query;
+  await connection.query(`DELETE FROM news WHERE news_id = ${id}`);
+  res.json({
+    status: "success",
+  });
+});
+
+app.post("/api/admin/news/sortable", verifyToken, function (req, res) {
+  var arr = req.body;
+  console.log(req.headers);
+  arr.forEach(function (value, key) {
+    connection.query("UPDATE news SET arr=? WHERE news_id = ?", [
+      key,
+      value.news_id,
+    ]);
+  });
+  res.json({
+    status: "success",
+  });
+});
+
+app.post("/api/admin/news/add", verifyToken, (req, res) => {
+  fields = req.body.fields;
+  files = req.body.files;
+
+  const topic = fields.topic;
+  const post_date = fields.post_date;
+  const status = fields.status;
+  const detail = fields.detail;
+  const { user_id } = req;
+  var newname = Date.now();
+  var oldpath = files.thumbnail.filepath;
+  var extension = files.thumbnail.originalFilename
+    .split(".")
+    .pop()
+    .toLowerCase();
+  var original_name =
+    files.thumbnail.originalFilename.split(".")[0] + "." + extension;
+  var newpath =
+    __dirname + "/upload/news/" + newname.toString() + "." + extension;
+  const thumbnail = newname.toString() + "." + extension;
+
+  fs.move(oldpath, newpath, async function (err) {
+    const [result] = await connection.query(
+      "SELECT MAX(arr) AS 'arr' FROM news"
+    );
+    var arr = 0;
+    if (result.length > 0) {
+      arr = result[0].arr + 1;
+    }
+    await connection.query(
+      `INSERT INTO news (topic, post_date, original_name, thumbnail, status, user_id, detail,  arr) VALUES ("${topic}", "${post_date}", "${original_name}", "${thumbnail}", "${status}", "${user_id}", "${detail}", "${arr}")`
+    );
+
+    res.json({ status: "success" });
   });
 });
 

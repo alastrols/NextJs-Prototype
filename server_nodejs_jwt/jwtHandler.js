@@ -10,7 +10,7 @@ function getToken(json) {
 
 function verifyToken(req, res, next) {
   // console.log("Verify Token: " + JSON.stringify(req.headers));
-  var token = req.headers["admin-access-token"].split(" ")[1];
+  var token = req.headers["admin_access_token"].split(" ")[1];
 
   if (!token) {
     return res.status(403).send({ auth: false, message: "No token provided." });

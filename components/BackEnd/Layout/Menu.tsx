@@ -14,6 +14,8 @@ import MailIcon from "@mui/icons-material/Mail";
 import { ListItem, Stack } from "@mui/material";
 import Link from "next/link";
 import { Layers, BarChart, Person } from "@mui/icons-material";
+import ImageIcon from "@mui/icons-material/Image";
+import NewspaperIcon from "@mui/icons-material/Newspaper";
 import { useRouter } from "next/router";
 
 import Image from "next/image";
@@ -80,15 +82,46 @@ export default function Menu({ open, onDrawerClose }: MenuProps) {
       <Divider />
       <List>
         {/* Stock */}
-        <Link href="/admin" passHref>
+        <Link href="/admin/banner" passHref>
           <ListItem
             button
-            className={router.pathname === "/admin" ? "Mui-selected" : ""}
+            className={
+              router.pathname === "/admin/banner"
+                ? "Mui-selected"
+                : router.pathname === "/admin/banner/add"
+                ? "Mui-selected"
+                : router.pathname === "/admin/banner/edit"
+                ? "Mui-selected"
+                : ""
+            }
           >
             <ListItemIcon>
-              <Layers />
+              <ImageIcon />
             </ListItemIcon>
-            <ListItemText primary="Index" />
+            <ListItemText primary="Banner" />
+          </ListItem>
+        </Link>
+      </List>
+
+      <List>
+        {/* Stock */}
+        <Link href="/admin/news" passHref>
+          <ListItem
+            button
+            className={
+              router.pathname === "/admin/news"
+                ? "Mui-selected"
+                : router.pathname === "/admin/news/add"
+                ? "Mui-selected"
+                : router.pathname === "/admin/news/edit"
+                ? "Mui-selected"
+                : ""
+            }
+          >
+            <ListItemIcon>
+              <NewspaperIcon />
+            </ListItemIcon>
+            <ListItemText primary="News" />
           </ListItem>
         </Link>
       </List>
