@@ -35,7 +35,7 @@ class MyDocument extends Document {
             rel="stylesheet"
           />
           <link
-            href="https://fonts.googleapis.com/css2?family=Pacifico&family=Rubik:wght@400;500;700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&family=Pacifico&family=Prompt&family=Rubik:wght@400;500;700&display=swap"
             rel="stylesheet"
           />
           <link
