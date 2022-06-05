@@ -77,10 +77,7 @@ export const getBannerId = async (id: any): Promise<void> => {
 
 export const editBanner = async (data: FormData): Promise<any> => {
   const url = process.env.NEXT_PUBLIC_BASE_URL_LOCAL_API;
-  const response = await httpClientAdmin.post(
-    `${url}/admin/banner/editBanner`,
-    data
-  );
+  const response = await axios.post(`${url}/admin/banner/editBanner`, data);
 
   return response.data;
 };
@@ -141,5 +138,19 @@ export const addNews = async (data: FormData): Promise<any> => {
   const url = process.env.NEXT_PUBLIC_BASE_URL_LOCAL_API;
   const response = await axios.post(`${url}/admin/news/addNews`, data);
 
+  return response.data;
+};
+
+export const getNewsId = async (id: any): Promise<void> => {
+  const url = process.env.NEXT_PUBLIC_BASE_URL_LOCAL_API;
+  if (id) {
+    const response = await axios.get(`${url}/admin/news/getbyid?id=${id}`);
+    return response.data.data[0];
+  }
+};
+
+export const editNews = async (data: FormData): Promise<any> => {
+  const url = process.env.NEXT_PUBLIC_BASE_URL_LOCAL_API;
+  const response = await axios.post(`${url}/admin/news/editNews`, data);
   return response.data;
 };

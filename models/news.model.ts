@@ -5,5 +5,6 @@ export interface NewsData {
   post_date: string;
   thumbnail: string;
   status: string;
+  detail: any;
   created_at: string;
 }
