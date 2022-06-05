@@ -98,11 +98,17 @@ app.post("/uploads", (req, res) => {
 
 app.post("/api/admin/login", async function (req, res) {
   var username = req.body.username;
-  console.log(username);
+  
   const [user, result] = await connection.query(
     `SELECT * FROM user WHERE username = '${username}'`
   );
 
+  if(!user[0]){
+    res.json({
+      status: "error",
+     });
+     return false;
+  }
   var passwordIsValid = bcrypt.compareSync(req.body.password, user[0].password);
   if (passwordIsValid) {
     var token = getToken({
@@ -120,7 +126,9 @@ app.post("/api/admin/login", async function (req, res) {
       },
     });
   } else {
-    res.json("Failed!");
+    res.json({
+      status: "error",
+     });
   }
 });
 
