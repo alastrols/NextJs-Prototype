@@ -41,7 +41,7 @@ export default function Header() {
     <header className="sticky_header shadow-sm">
       <div className="container-fluid">
         <div className="row align-items-center">
-          <div className="col-12 col-sm-12 order-sm-3 col-md-3 col-xl-2 col-xxl-2 header_hotline">
+          <div className="col-12 col-sm-12 order-sm-3 col-md-3 col-xl-2 col-xxl-2 header_hotline p-0">
             <div className="bg_gray d-flex align-items-center">
               <div className="item_icon flex-shrink-0">
                 <i className="fa-solid fa-phone" />
