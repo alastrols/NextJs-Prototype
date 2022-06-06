@@ -11,6 +11,7 @@ function getToken(json) {
 function verifyToken(req, res, next) {
   // console.log("Verify Token: " + JSON.stringify(req.headers));
   var token = req.headers["admin_access_token"].split(" ")[1];
+ 
 
   if (!token) {
     return res.status(403).send({ auth: false, message: "No token provided." });
@@ -18,9 +19,7 @@ function verifyToken(req, res, next) {
 
   jwt.verify(token, secretKey, function (err, decoded) {
     if (err) {
-      return res
-        .status(500)
-        .send({ auth: false, message: "Failed to authenticate token." });
+      return res.json({status: "error"})
     }
     req.user_id = decoded.user_id;
     req.username = decoded.username;

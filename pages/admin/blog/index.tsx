@@ -25,15 +25,15 @@ import Switch from "@mui/material/Switch";
 //   productSelector,
 // } from "@/store/slices/productSlice";
 import {
-  getNews,
-  newsSelector,
-  deleteNews,
-  deleteAllNews,
-  sortableNews,
-} from "@/store/slices/admin/newsSlice";
+  getBlog,
+  blogSelector,
+  deleteBlog,
+  deleteAllBlog,
+  sortableBlog,
+} from "@/store/slices/admin/blogSlice";
 import { useAppDispatch } from "@/store/store";
 import { useSelector } from "react-redux";
-import { NewsData } from "@/models/news.model";
+import { BlogData } from "@/models/blog.model";
 import Image from "next/image";
 import { productImageURL, getBase64 } from "@/utils/commonUtil";
 import Zoom from "react-medium-image-zoom";
@@ -96,7 +96,7 @@ interface EnhancedTableProps {
   numSelected: number;
   onRequestSort: (
     event: React.MouseEvent<unknown>,
-    property: keyof NewsData
+    property: keyof BlogData
   ) => void;
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
   order: Order;
@@ -114,14 +114,14 @@ type Props = {};
 
 interface HeadCell {
   disablePadding: boolean;
-  id: keyof NewsData;
+  id: keyof BlogData;
   label: string;
   numeric: boolean;
 }
 
-export const News = ({}: Props) => {
+export const Blog = ({}: Props) => {
   const [order, setOrder] = React.useState<Order>("asc");
-  const [orderBy, setOrderBy] = React.useState<keyof NewsData>("arr");
+  const [orderBy, setOrderBy] = React.useState<keyof BlogData>("arr");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
@@ -130,9 +130,9 @@ export const News = ({}: Props) => {
   const [searched, setSearched] = React.useState<string>("");
   const [sorted, setSorted] = React.useState<Array<string>>([]);
 
-  const newsList = useSelector(newsSelector);
+  const blogList = useSelector(blogSelector);
   // const [rows, setRows] = React.useState(productList ?? []);
-  const rows = newsList ?? [];
+  const rows = blogList ?? [];
 
   // const rows = productList ?? [];
   const dispatch = useAppDispatch();
@@ -154,7 +154,7 @@ export const News = ({}: Props) => {
       if (result.isConfirmed) {
         Swal.fire("Deleted!", "Your data has been deleted.", "success").then(
           function () {
-            dispatch(deleteAllNews(id));
+            dispatch(deleteAllBlog(id));
             setSelected([]);
           }
         );
@@ -175,7 +175,7 @@ export const News = ({}: Props) => {
       if (result.isConfirmed) {
         Swal.fire("Deleted!", "Your data has been deleted.", "success").then(
           function () {
-            dispatch(deleteNews(id));
+            dispatch(deleteBlog(id));
             setSelected([]);
           }
         );
@@ -194,7 +194,7 @@ export const News = ({}: Props) => {
       result.source.index,
       result.destination.index
     );
-    dispatch(sortableNews(movedItems));
+    dispatch(sortableBlog(movedItems));
     setSorted(movedItems);
   };
 
@@ -240,7 +240,7 @@ export const News = ({}: Props) => {
             id="tableTitle"
             component="div"
           >
-            News
+            Blog
           </Typography>
         )}
         {numSelected > 0 ? (
@@ -260,7 +260,7 @@ export const News = ({}: Props) => {
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
-    property: keyof NewsData
+    property: keyof BlogData
   ) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
@@ -269,8 +269,8 @@ export const News = ({}: Props) => {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelecteds: any = rows.map((n) => n.news_id);
-      setSelected(newSelecteds);
+      const blogSelecteds: any = rows.map((n) => n.blog_id);
+      setSelected(blogSelecteds);
       return;
     }
     setSelected([]);
@@ -279,26 +279,26 @@ export const News = ({}: Props) => {
   const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
     const selectedIndex = selected.indexOf(name);
 
-    let newSelected: readonly string[] = [];
+    let blogSelected: readonly string[] = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
+      blogSelected = blogSelected.concat(selected, name);
     } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
+      blogSelected = blogSelected.concat(selected.slice(1));
     } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
+      blogSelected = blogSelected.concat(selected.slice(0, -1));
     } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
+      blogSelected = blogSelected.concat(
         selected.slice(0, selectedIndex),
         selected.slice(selectedIndex + 1)
       );
     }
 
-    setSelected(newSelected);
+    setSelected(blogSelected);
   };
 
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage);
+  const handleChangePage = (event: unknown, blogPage: number) => {
+    setPage(blogPage);
   };
 
   const handleChangeRowsPerPage = (
@@ -318,15 +318,15 @@ export const News = ({}: Props) => {
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
   React.useEffect(() => {
-    dispatch(getNews());
+    dispatch(getBlog());
   }, [dispatch]);
 
   React.useEffect(() => {
-    dispatch(getNews(searched));
+    dispatch(getBlog(searched));
   }, [dispatch, searched]);
 
   React.useEffect(() => {
-    dispatch(getNews());
+    dispatch(getBlog());
   }, [dispatch, sorted]);
 
   async function saveAsExcel() {
@@ -368,8 +368,7 @@ export const News = ({}: Props) => {
           item.created_at,
         ]);
         content.height = 100;
-
-        const url = productImageURL("news", item.thumbnail);
+        const url = productImageURL("blog", item.thumbnail);
         let axiosResponse: any = await axios.get<
           any,
           AxiosResponse<ArrayBuffer>
@@ -385,7 +384,6 @@ export const News = ({}: Props) => {
           extension: "png",
         });
         ws.addImage(imageID, `C${no + 1}:C${no + 1}`);
-
         position++;
       })
     );
@@ -393,12 +391,12 @@ export const News = ({}: Props) => {
       row.alignment = { vertical: "middle", horizontal: "center" };
     });
     const buf = await wb.xlsx.writeBuffer();
-    await saveAs(new Blob([buf]), "news.xlsx");
+    await saveAs(new Blob([buf]), "blog.xlsx");
   }
 
   const headCells: readonly HeadCell[] = [
     {
-      id: "news_id",
+      id: "blog_id",
       numeric: false,
       disablePadding: false,
       label: "No",
@@ -445,7 +443,7 @@ export const News = ({}: Props) => {
       onRequestSort,
     } = props;
     const createSortHandler =
-      (property: keyof NewsData) => (event: React.MouseEvent<unknown>) => {
+      (property: keyof BlogData) => (event: React.MouseEvent<unknown>) => {
         onRequestSort(event, property);
       };
 
@@ -502,11 +500,11 @@ export const News = ({}: Props) => {
 
           <Button
             sx={{ ml: 2 }}
-            onClick={() => router.push("/admin/news/add")}
+            onClick={() => router.push("/admin/blog/add")}
             variant="contained"
             color="primary"
           >
-            Add News
+            Add Blog
           </Button>
 
           <Button
@@ -551,12 +549,12 @@ export const News = ({}: Props) => {
                           page * rowsPerPage + rowsPerPage
                         )
                         .map((row, index) => {
-                          const isItemSelected = isSelected(row.news_id);
+                          const isItemSelected = isSelected(row.blog_id);
                           const labelId = `enhanced-table-checkbox-${index}`;
                           return (
                             <Draggable
-                              key={row.news_id}
-                              draggableId={"q-" + row.news_id}
+                              key={row.blog_id}
+                              draggableId={"q-" + row.blog_id}
                               index={index}
                             >
                               {(provided, snapshot) => (
@@ -566,19 +564,19 @@ export const News = ({}: Props) => {
                                   {...provided.dragHandleProps}
                                   hover
                                   onClick={(event) =>
-                                    handleClick(event, row.news_id)
+                                    handleClick(event, row.blog_id)
                                   }
                                   role="checkbox"
                                   aria-checked={isItemSelected}
                                   tabIndex={-1}
-                                  key={row.news_id}
+                                  key={row.blog_id}
                                   selected={isItemSelected}
                                 >
                                   <TableCell align="center">
                                     <Checkbox
                                       color="primary"
                                       checked={isItemSelected}
-                                      value={row.news_id}
+                                      value={row.blog_id}
                                       // checked={ids.includes(row.calories) ? true : false}
                                       inputProps={{
                                         "aria-labelledby": labelId,
@@ -606,7 +604,7 @@ export const News = ({}: Props) => {
                                       objectFit="cover"
                                       alt="thumbnail image"
                                       src={productImageURL(
-                                        "news",
+                                        "blog",
                                         row.thumbnail
                                       )}
                                       style={{ borderRadius: "5%" }}
@@ -645,7 +643,7 @@ export const News = ({}: Props) => {
                                         size="large"
                                         onClick={() =>
                                           router.push(
-                                            "/admin/news/edit?id=" + row.news_id
+                                            "/admin/blog/edit?id=" + row.blog_id
                                           )
                                         }
                                       >
@@ -655,7 +653,7 @@ export const News = ({}: Props) => {
                                         color="error"
                                         aria-label="delete"
                                         size="large"
-                                        onClick={() => Delete(row.news_id)}
+                                        onClick={() => Delete(row.blog_id)}
                                       >
                                         <DeleteIcon fontSize="inherit" />
                                       </IconButton>
@@ -700,4 +698,4 @@ export const News = ({}: Props) => {
   );
 };
 
-export default withAuth(News);
+export default withAuth(Blog);

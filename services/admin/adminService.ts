@@ -3,6 +3,7 @@ import { httpClientAdmin } from "@/utils/httpClient";
 import { ADMIN_ACCESS_TOKEN_KEY } from "@/utils/constant";
 import { BannerData } from "@/models/banner.model";
 import { NewsData } from "@/models/news.model";
+import { BlogData } from "@/models/blog.model";
 import axios, { AxiosRequestConfig } from "axios";
 type signProps = {
   username: string;
@@ -102,6 +103,8 @@ export const postBannerSortable = async (data: any): Promise<void> => {
   return response.data;
 };
 
+
+// News
 export const getNews = async (keyword?: string): Promise<NewsData[]> => {
   const url = process.env.NEXT_PUBLIC_BASE_URL_LOCAL_API;
   if (keyword) {
@@ -152,5 +155,60 @@ export const getNewsId = async (id: any): Promise<void> => {
 export const editNews = async (data: FormData): Promise<any> => {
   const url = process.env.NEXT_PUBLIC_BASE_URL_LOCAL_API;
   const response = await axios.post(`${url}/admin/news/editNews`, data);
+  return response.data;
+};
+
+
+// Blog
+export const getBlog = async (keyword?: string): Promise<BlogData[]> => {
+  const url = process.env.NEXT_PUBLIC_BASE_URL_LOCAL_API;
+  if (keyword) {
+    const response = await axios.get(
+      `${url}/admin/blog/get?keyword=${keyword}`
+    );
+    return response.data.data;
+  } else {
+    const response = await axios.get(`${url}/admin/blog/select`);
+    return response.data.data;
+  }
+};
+
+export const deleteBlog = async (id?: string): Promise<void> => {
+  const url = process.env.NEXT_PUBLIC_BASE_URL_LOCAL_API;
+  // await httpClientAdmin.delete(`/stock/product/${id}`);
+  const response = await axios.delete(`${url}/admin/blog/delete?id=${id}`);
+  return response.data.data;
+};
+
+export const deleteAllBlog = async (id: any): Promise<void> => {
+  const url = process.env.NEXT_PUBLIC_BASE_URL_LOCAL_API;
+  // await httpClientAdmin.delete(`/stock/product/${id}`);
+  id.forEach(async (id: number) => {
+    await axios.delete(`${url}/admin/blog/delete?id=${id}`);
+  });
+};
+export const postBlogSortable = async (data: any): Promise<void> => {
+  const response = await httpClientAdmin.post(`/blog/sortable`, data);
+  return response.data;
+};
+
+export const addBlog = async (data: FormData): Promise<any> => {
+  const url = process.env.NEXT_PUBLIC_BASE_URL_LOCAL_API;
+  const response = await axios.post(`${url}/admin/blog/addBlog`, data);
+
+  return response.data;
+};
+
+export const getBlogId = async (id: any): Promise<void> => {
+  const url = process.env.NEXT_PUBLIC_BASE_URL_LOCAL_API;
+  if (id) {
+    const response = await axios.get(`${url}/admin/blog/getbyid?id=${id}`);
+    return response.data.data[0];
+  }
+};
+
+export const editBlog = async (data: FormData): Promise<any> => {
+  const url = process.env.NEXT_PUBLIC_BASE_URL_LOCAL_API;
+  const response = await axios.post(`${url}/admin/blog/editBlog`, data);
   return response.data;
 };

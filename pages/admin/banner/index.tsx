@@ -358,15 +358,9 @@ export const Banner = ({}: Props) => {
 
     await Promise.all(
       rows.map(async (item, index): Promise<any> => {
-        const url = productImageURL("banner", item.banner);
-        let axiosResponse: any = await axios.get<
-          any,
-          AxiosResponse<ArrayBuffer>
-        >(url, {
-          responseType: "arraybuffer",
-        });
+        const no = index + 1;
         const content = ws.addRow([
-          index + 1,
+          no,
           item.banner_name,
           "",
           item.post_date,
@@ -375,6 +369,14 @@ export const Banner = ({}: Props) => {
         ]);
         content.height = 100;
 
+        const url = productImageURL("banner", item.banner);
+        let axiosResponse: any = await axios.get<
+          any,
+          AxiosResponse<ArrayBuffer>
+        >(url, {
+          responseType: "arraybuffer",
+        });
+
         const dataBuffer = Buffer.from(axiosResponse.data, "binary").toString(
           "base64"
         );
@@ -382,7 +384,7 @@ export const Banner = ({}: Props) => {
           base64: dataBuffer,
           extension: "png",
         });
-        ws.addImage(imageID, `C${position}:C${position}`);
+        ws.addImage(imageID, `C${no + 1}:C${no + 1}`);
 
         position++;
       })

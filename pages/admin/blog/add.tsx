@@ -4,6 +4,7 @@ import { ADMIN_ACCESS_TOKEN_KEY } from "@/utils/constant";
 import type { NextApiRequest, NextApiResponse } from "next";
 import cookie from "cookie";
 import React, { useEffect, useState, useRef } from "react";
+import { addBlog } from "@/services/admin/adminService";
 import "react-calendar-timeline/lib/Timeline.css";
 import moment from "moment";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
@@ -39,41 +40,26 @@ const { Option } = Select;
 import { useRouter } from "next/router";
 import { productImageURL, getBase64 } from "@/utils/commonUtil";
 import { Editor } from "@tinymce/tinymce-react";
-import { NewsData } from "@/models/news.model";
-import { getNewsId, editNews } from "@/services/admin/adminService";
 
-type Props = {
-  news?: NewsData;
-};
+type Props = {};
 
-const Edit = ({ news }: Props) => {
+const Add = ({}: Props) => {
   const router = useRouter();
   const [dateSend, setDateSend] = React.useState<Date>();
   const initialValues: any = {
-    news_id: `${news?.news_id}`,
-    topic: `${news?.topic}`,
-    post_date: `${news?.post_date}`,
-    status: `${news?.status}`,
+    topic: "",
+    post_date: "",
+    status: "Show",
   };
-  const editorRef = useRef<any>(news?.detail);
+  const editorRef = useRef<any>(null);
 
   const showPreviewImage = (values: any) => {
     if (values.file_obj) {
       return (
         <Image
           objectFit="contain"
-          alt="thumbnail image"
+          alt="product image"
           src={values.file_obj}
-          width={100}
-          height={100}
-        />
-      );
-    } else if (news?.thumbnail) {
-      return (
-        <Image
-          objectFit="contain"
-          alt="thumbnail image"
-          src={productImageURL("news", news?.thumbnail)}
           width={100}
           height={100}
         />
@@ -85,7 +71,7 @@ const Edit = ({ news }: Props) => {
     <Layout>
       <div>
         <div className={"details__wrapper d-flex justify-content-center mt-4"}>
-          <Title level={2}>Edit News</Title>
+          <Title level={2}>Add Blog</Title>
         </div>
         <Formik
           initialValues={initialValues}
@@ -97,7 +83,6 @@ const Edit = ({ news }: Props) => {
             const post_date = year + "-" + month + "-" + day;
 
             let data = new FormData();
-            data.append("news_id", String(values.news_id));
             data.append("topic", String(values.topic));
             data.append("post_date", String(post_date));
             data.append("status", String(values.status));
@@ -109,15 +94,13 @@ const Edit = ({ news }: Props) => {
             } else {
               data.append("detail", "");
             }
-            const response = await editNews(data);
+            const response = await addBlog(data);
             if (response.status == "success") {
-              Swal.fire(
-                "Success!",
-                "Your news has been updated",
-                "success"
-              ).then(function () {
-                router.push("/admin/news");
-              });
+              Swal.fire("Success!", "Your blog has been added", "success").then(
+                function () {
+                  router.push("/admin/blog");
+                }
+              );
             }
             setSubmitting(false);
           }}
@@ -128,6 +111,9 @@ const Edit = ({ news }: Props) => {
             }
             if (!values.post_date) {
               errors.post_date = "* Post Date is required";
+            }
+            if (!values.file) {
+              errors.thumbnail = "* Thumbnail is required";
             }
             return errors;
           }}
@@ -238,7 +224,7 @@ const Edit = ({ news }: Props) => {
                       <Editor
                         apiKey="2s0w71caf8mc5dpcr17pwapuu74ko8mkivvenvzdmvnqyjti"
                         onInit={(evt, editor) => (editorRef.current = editor)}
-                        initialValue={news?.detail}
+                        initialValue=""
                         init={{
                           height: 500,
                           menubar: true,
@@ -294,7 +280,7 @@ const Edit = ({ news }: Props) => {
                       style={{ marginTop: "20px", marginLeft: "20px" }}
                       type={"primary"}
                       danger
-                      onClick={() => router.push("/admin/news")}
+                      onClick={() => router.push("/admin/blog")}
                     >
                       Back
                     </Button>
@@ -309,21 +295,4 @@ const Edit = ({ news }: Props) => {
   );
 };
 
-export default withAuth(Edit);
-
-export const getServerSideProps: GetServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  const { id }: any = context.query;
-  if (id) {
-    const news = await getNewsId(id);
-
-    return {
-      props: {
-        news,
-      },
-    };
-  } else {
-    return { props: {} };
-  }
-};
+export default withAuth(Add);

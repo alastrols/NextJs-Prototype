@@ -16,6 +16,7 @@ import Link from "next/link";
 import { Layers, BarChart, Person } from "@mui/icons-material";
 import ImageIcon from "@mui/icons-material/Image";
 import NewspaperIcon from "@mui/icons-material/Newspaper";
+import BookIcon from "@mui/icons-material/Book";
 import { useRouter } from "next/router";
 
 import Image from "next/image";
@@ -122,6 +123,29 @@ export default function Menu({ open, onDrawerClose }: MenuProps) {
               <NewspaperIcon />
             </ListItemIcon>
             <ListItemText primary="News" />
+          </ListItem>
+        </Link>
+      </List>
+
+      <List>
+        {/* Stock */}
+        <Link href="/admin/blog" passHref>
+          <ListItem
+            button
+            className={
+              router.pathname === "/admin/blog"
+                ? "Mui-selected"
+                : router.pathname === "/admin/blog/add"
+                ? "Mui-selected"
+                : router.pathname === "/admin/blog/edit"
+                ? "Mui-selected"
+                : ""
+            }
+          >
+            <ListItemIcon>
+              <BookIcon />
+            </ListItemIcon>
+            <ListItemText primary="Blog" />
           </ListItem>
         </Link>
       </List>

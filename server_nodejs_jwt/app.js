@@ -73,7 +73,8 @@ app.post("/login", async function (req, res) {
 
 app.get("/feed", async function (req, res) {
   const [user, result] = await connection.query(`SELECT * FROM user`);
-  res.json(user);
+  console.log("...");
+  res.json({ status: "success" });
 });
 
 app.post("/uploads", (req, res) => {
@@ -98,16 +99,16 @@ app.post("/uploads", (req, res) => {
 
 app.post("/api/admin/login", async function (req, res) {
   var username = req.body.username;
-  
+
   const [user, result] = await connection.query(
     `SELECT * FROM user WHERE username = '${username}'`
   );
 
-  if(!user[0]){
+  if (!user[0]) {
     res.json({
       status: "error",
-     });
-     return false;
+    });
+    return false;
   }
   var passwordIsValid = bcrypt.compareSync(req.body.password, user[0].password);
   if (passwordIsValid) {
@@ -128,7 +129,7 @@ app.post("/api/admin/login", async function (req, res) {
   } else {
     res.json({
       status: "error",
-     });
+    });
   }
 });
 
@@ -147,7 +148,7 @@ app.get("/api/admin/profile", verifyToken, async (req, res) => {
   const [user, result] = await connection.query(
     `SELECT * FROM user WHERE user_id = '${user_id}'`
   );
-
+  console.log(user);
   res.json({
     status: "success",
     data: {
@@ -418,6 +419,140 @@ app.post("/api/admin/news/edit", verifyToken, async (req, res) => {
     fs.move(oldpath, newpath, async function (err) {
       await connection.query(
         `UPDATE news SET original_name="${original_name}", thumbnail="${thumbnail}" WHERE news_id = ${news_id} `
+      );
+    });
+  }
+
+  res.json({ status: "success" });
+});
+
+// Blog
+
+app.get("/api/admin/blog", verifyToken, async (req, res) => {
+  const [data, result] = await connection.query(
+    `SELECT * FROM blog ORDER BY arr ASC`
+  );
+  res.json({
+    status: "success",
+    data: data,
+  });
+});
+
+app.get("/api/admin/blog/search", verifyToken, async (req, res) => {
+  const { keyword } = req.query;
+  const [data, result] = await connection.query(
+    `SELECT * FROM blog WHERE topic LIKE '%${keyword}%'
+     OR post_date LIKE '%${keyword}%'
+     OR status LIKE '%${keyword}%' 
+     OR created_at LIKE '%${keyword}%' 
+     ORDER BY arr ASC`
+  );
+  res.json({
+    status: "success",
+    data: data,
+  });
+});
+
+app.delete("/api/admin/blog/delete", async (req, res) => {
+  const { id } = req.query;
+  await connection.query(`DELETE FROM blog WHERE blog_id = ${id}`);
+  res.json({
+    status: "success",
+  });
+});
+
+app.post("/api/admin/blog/sortable", verifyToken, function (req, res) {
+  var arr = req.body;
+  console.log(req.headers);
+  arr.forEach(function (value, key) {
+    connection.query("UPDATE blog SET arr=? WHERE blog_id = ?", [
+      key,
+      value.blog_id,
+    ]);
+  });
+  res.json({
+    status: "success",
+  });
+});
+
+app.post("/api/admin/blog/add", verifyToken, (req, res) => {
+  fields = req.body.fields;
+  files = req.body.files;
+
+  const topic = fields.topic;
+  const post_date = fields.post_date;
+  const status = fields.status;
+  const detail = fields.detail;
+  const { user_id } = req;
+  var newname = Date.now();
+  var oldpath = files.thumbnail.filepath;
+  var extension = files.thumbnail.originalFilename
+    .split(".")
+    .pop()
+    .toLowerCase();
+  var original_name =
+    files.thumbnail.originalFilename.split(".")[0] + "." + extension;
+  var newpath =
+    __dirname + "/upload/blog/" + newname.toString() + "." + extension;
+  const thumbnail = newname.toString() + "." + extension;
+
+  fs.move(oldpath, newpath, async function (err) {
+    const [result] = await connection.query(
+      "SELECT MAX(arr) AS 'arr' FROM blog"
+    );
+    var arr = 0;
+    if (result.length > 0) {
+      arr = result[0].arr + 1;
+    }
+    await connection.query(
+      `INSERT INTO blog (topic, post_date, original_name, thumbnail, status, user_id, detail,  arr) VALUES ("${topic}", "${post_date}", "${original_name}", "${thumbnail}", "${status}", "${user_id}", "${detail}", "${arr}")`
+    );
+
+    res.json({ status: "success" });
+  });
+});
+
+app.get("/api/admin/blog/getbyid", async (req, res) => {
+  const { id } = req.query;
+  const [data, result] = await connection.query(
+    `SELECT * FROM blog WHERE blog_id = '${id}'`
+  );
+  res.json({
+    status: "success",
+    data: data,
+  });
+});
+
+app.post("/api/admin/blog/edit", verifyToken, async (req, res) => {
+  fields = req.body.fields;
+  files = req.body.files;
+  const blog_id = fields.blog_id;
+  const topic = fields.topic;
+  const post_date = fields.post_date;
+  const status = fields.status;
+  const detail = fields.detail;
+  const { user_id } = req;
+  await connection.query(
+    "UPDATE blog SET topic=?, post_date=?, detail=?, status=? WHERE blog_id = ?",
+    [topic, post_date, detail, status, blog_id]
+  );
+
+  if (files.thumbnail) {
+    var newname = Date.now();
+    var oldpath = files.thumbnail.filepath;
+    var extension = files.thumbnail.originalFilename
+      .split(".")
+      .pop()
+      .toLowerCase();
+    var original_name =
+      files.thumbnail.originalFilename.split(".")[0] + "." + extension;
+    var newpath =
+      __dirname + "/upload/blog/" + newname.toString() + "." + extension;
+    const thumbnail = newname.toString() + "." + extension;
+
+    fs.move(oldpath, newpath, async function (err) {
+      await connection.query(
+        `UPDATE blog SET original_name="${original_name}", thumbnail="${thumbnail}" WHERE blog_id = ${blog_id} `
       );
     });
   }

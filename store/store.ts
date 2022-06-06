@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import adminReducer from "./slices/admin/adminSlice";
 import bannerReducer from "./slices/admin/bannerSlice";
 import newsReducer from "./slices/admin/newsSlice";
+import blogReducer from "./slices/admin/blogSlice";
 import userReducer from "./slices/userSlice";
 import productReducer from "./slices/productSlice";
 const reducers = {
@@ -11,6 +12,7 @@ const reducers = {
   admin: adminReducer,
   banner: bannerReducer,
   news: newsReducer,
+  blog: blogReducer,
 };
 
 export const store = configureStore({

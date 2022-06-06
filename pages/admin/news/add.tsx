@@ -113,7 +113,7 @@ const Add = ({}: Props) => {
               errors.post_date = "* Post Date is required";
             }
             if (!values.file) {
-              errors.banner = "* Banner is required";
+              errors.thumbnail = "* Thumbnail is required";
             }
             return errors;
           }}
@@ -155,7 +155,9 @@ const Add = ({}: Props) => {
                   </div>
 
                   <div
-                    className={`form__item ${errors.banner && "input__error"} `}
+                    className={`form__item ${
+                      errors.thumbnail && "input__error"
+                    } `}
                     style={{ width: "100%" }}
                   >
                     <div style={{ margin: 16 }}>{showPreviewImage(values)}</div>
@@ -188,7 +190,7 @@ const Add = ({}: Props) => {
                     />
 
                     <p className="error__feedback" style={{ color: "red" }}>
-                      {errors.banner ? `${errors.banner}` : ""}
+                      {errors.thumbnail ? `${errors.thumbnail}` : ""}
                     </p>
                   </div>
 

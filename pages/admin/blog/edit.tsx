@@ -39,23 +39,23 @@ const { Option } = Select;
 import { useRouter } from "next/router";
 import { productImageURL, getBase64 } from "@/utils/commonUtil";
 import { Editor } from "@tinymce/tinymce-react";
-import { NewsData } from "@/models/news.model";
-import { getNewsId, editNews } from "@/services/admin/adminService";
+import { BlogData } from "@/models/blog.model";
+import { getBlogId, editBlog } from "@/services/admin/adminService";
 
 type Props = {
-  news?: NewsData;
+  blog?: BlogData;
 };
 
-const Edit = ({ news }: Props) => {
+const Edit = ({ blog }: Props) => {
   const router = useRouter();
   const [dateSend, setDateSend] = React.useState<Date>();
   const initialValues: any = {
-    news_id: `${news?.news_id}`,
-    topic: `${news?.topic}`,
-    post_date: `${news?.post_date}`,
-    status: `${news?.status}`,
+    blog_id: `${blog?.blog_id}`,
+    topic: `${blog?.topic}`,
+    post_date: `${blog?.post_date}`,
+    status: `${blog?.status}`,
   };
-  const editorRef = useRef<any>(news?.detail);
+  const editorRef = useRef<any>(blog?.detail);
 
   const showPreviewImage = (values: any) => {
     if (values.file_obj) {
@@ -68,12 +68,12 @@ const Edit = ({ news }: Props) => {
           height={100}
         />
       );
-    } else if (news?.thumbnail) {
+    } else if (blog?.thumbnail) {
       return (
         <Image
           objectFit="contain"
           alt="thumbnail image"
-          src={productImageURL("news", news?.thumbnail)}
+          src={productImageURL("blog", blog?.thumbnail)}
           width={100}
           height={100}
         />
@@ -85,7 +85,7 @@ const Edit = ({ news }: Props) => {
     <Layout>
       <div>
         <div className={"details__wrapper d-flex justify-content-center mt-4"}>
-          <Title level={2}>Edit News</Title>
+          <Title level={2}>Edit Blog</Title>
         </div>
         <Formik
           initialValues={initialValues}
@@ -97,7 +97,7 @@ const Edit = ({ news }: Props) => {
             const post_date = year + "-" + month + "-" + day;
 
             let data = new FormData();
-            data.append("news_id", String(values.news_id));
+            data.append("blog_id", String(values.blog_id));
             data.append("topic", String(values.topic));
             data.append("post_date", String(post_date));
             data.append("status", String(values.status));
@@ -109,14 +109,14 @@ const Edit = ({ news }: Props) => {
             } else {
               data.append("detail", "");
             }
-            const response = await editNews(data);
+            const response = await editBlog(data);
             if (response.status == "success") {
               Swal.fire(
                 "Success!",
-                "Your news has been updated",
+                "Your blog has been updated",
                 "success"
               ).then(function () {
-                router.push("/admin/news");
+                router.push("/admin/blog");
               });
             }
             setSubmitting(false);
@@ -238,7 +238,7 @@ const Edit = ({ news }: Props) => {
                       <Editor
                         apiKey="2s0w71caf8mc5dpcr17pwapuu74ko8mkivvenvzdmvnqyjti"
                         onInit={(evt, editor) => (editorRef.current = editor)}
-                        initialValue={news?.detail}
+                        initialValue={blog?.detail}
                         init={{
                           height: 500,
                           menubar: true,
@@ -294,7 +294,7 @@ const Edit = ({ news }: Props) => {
                       style={{ marginTop: "20px", marginLeft: "20px" }}
                       type={"primary"}
                       danger
-                      onClick={() => router.push("/admin/news")}
+                      onClick={() => router.push("/admin/blog")}
                     >
                       Back
                     </Button>
@@ -316,11 +316,11 @@ export const getServerSideProps: GetServerSideProps = async (
 ) => {
   const { id }: any = context.query;
   if (id) {
-    const news = await getNewsId(id);
+    const blog = await getBlogId(id);
 
     return {
       props: {
-        news,
+        blog,
       },
     };
   } else {

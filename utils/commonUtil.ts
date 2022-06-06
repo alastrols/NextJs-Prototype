@@ -2,6 +2,10 @@ export const productImageURL = (path?: string, image?: string): string => {
   return `${process.env.NEXT_PUBLIC_BASE_IMAGE_URL_API}/${path}/${image}`;
 };
 
+export const imageURL = (path?: string, image?: string): string => {
+  return `${process.env.NEXT_PUBLIC_BASE_IMAGE_URL_API}/${path}/${image}`;
+};
+
 export const userProfileImageURL = (image?: string): string => {
   return `${process.env.NEXT_PUBLIC_BASE_IMAGE_URL_API}/${image}`;
 };
