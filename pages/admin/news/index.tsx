@@ -45,11 +45,36 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import router from "next/router";
 import Stack from "@mui/material/Stack";
 import Swal from "sweetalert2";
-import { Button, Fab, TextField } from "@mui/material";
+import { Button, Fab, Card,
+  CardContent,
+  CardActions, } from "@mui/material";
 import * as Excel from "exceljs";
 import { saveAs } from "file-saver";
 import axios, { AxiosResponse } from "axios";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import Modal from '@mui/material/Modal';
+import { Field, Form, Formik, FormikProps } from "formik";
+import Link from "next/link";
+import { TextField as TextFieldInput } from "formik-material-ui";
+import  TextField  from '@mui/material/TextField';
+import { addNews } from "@/services/admin/adminService";
+import "react-calendar-timeline/lib/Timeline.css";
+import moment from "moment";
+
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import { Editor } from "@tinymce/tinymce-react";
+// import {
+//   MuiPickersUtilsProvider,
+//   KeyboardTimePicker,
+//   KeyboardDatePicker
+// } from "@material-ui/pickers";
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -118,6 +143,22 @@ interface HeadCell {
   label: string;
   numeric: boolean;
 }
+const style = {
+  position: 'absolute' as 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 1200,
+  overflow:'scroll',
+  height:'100%',
+  display:'block',
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+};
+
+
 
 export const News = ({}: Props) => {
   const [order, setOrder] = React.useState<Order>("asc");
@@ -129,6 +170,14 @@ export const News = ({}: Props) => {
   const [ids, setIds] = React.useState<Array<number>>([]);
   const [searched, setSearched] = React.useState<string>("");
   const [sorted, setSorted] = React.useState<Array<string>>([]);
+  // const [dateSend, setDateSend] = React.useState<Date | null>(null);
+  const [dateSend, setDateSend] = React.useState<Date>(new Date());
+  const [addStatus, setAddStatus] = React.useState("Show");
+  const [open, setOpen] = React.useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const editorRef = useRef<any>(null);
+
 
   const newsList = useSelector(newsSelector);
   // const [rows, setRows] = React.useState(productList ?? []);
@@ -140,6 +189,8 @@ export const News = ({}: Props) => {
   const requestSearch = (searchedVal: string) => {
     console.log(searchedVal);
   };
+
+  
 
   const DeleteAll = (id: any) => {
     Swal.fire({
@@ -156,6 +207,7 @@ export const News = ({}: Props) => {
           function () {
             dispatch(deleteAllNews(id));
             setSelected([]);
+            dispatch(getNews());
           }
         );
       }
@@ -278,6 +330,8 @@ export const News = ({}: Props) => {
 
   const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
     const selectedIndex = selected.indexOf(name);
+    
+
 
     let newSelected: readonly string[] = [];
 
@@ -368,24 +422,26 @@ export const News = ({}: Props) => {
           item.created_at,
         ]);
         content.height = 100;
-
-        const url = productImageURL("news", item.thumbnail);
-        let axiosResponse: any = await axios.get<
-          any,
-          AxiosResponse<ArrayBuffer>
-        >(url, {
-          responseType: "arraybuffer",
-        });
-
-        const dataBuffer = Buffer.from(axiosResponse.data, "binary").toString(
-          "base64"
-        );
-        var imageID = wb.addImage({
-          base64: dataBuffer,
-          extension: "png",
-        });
-        ws.addImage(imageID, `C${no + 1}:C${no + 1}`);
-
+        if(item.thumbnail != ""){
+          const url = productImageURL("news", item.thumbnail);
+          let axiosResponse: any = await axios.get<
+            any,
+            AxiosResponse<ArrayBuffer>
+          >(url, {
+            responseType: "arraybuffer",
+          });
+  
+          const dataBuffer = Buffer.from(axiosResponse.data, "binary").toString(
+            "base64"
+          );
+          var imageID = wb.addImage({
+            base64: dataBuffer,
+            extension: "png",
+          });
+          ws.addImage(imageID, `C${no + 1}:C${no + 1}`);
+  
+        }
+        
         position++;
       })
     );
@@ -480,6 +536,193 @@ export const News = ({}: Props) => {
     );
   }
 
+
+  const showForm = ({ values, setFieldValue, isValid }: FormikProps<any>) => {
+      return (
+        <Form>
+          <Card>
+            <CardContent sx={{ padding: 4 }}>
+              <Typography gutterBottom variant="h3">
+                Add News
+              </Typography>
+
+              <Field
+                style={{ marginTop: 16 }}
+                fullWidth
+                component={TextFieldInput}
+                name="topic"
+                type="text"
+                label="Topic"
+              />
+              <br />
+
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <MobileDatePicker
+                  
+                  label="Post Date"
+                  mask="____-__-__"
+                  value={dateSend}
+                  onChange={(newValue:any) => {
+                    if (newValue instanceof Date && !isNaN(newValue.valueOf())) {
+                      setDateSend(newValue);
+                    }
+                  }}
+                  inputFormat="yyyy-MM-dd"
+                  renderInput={(params:any) => <TextField  name="post_date"  fullWidth style={{ marginTop: 16, marginBottom: 16 }} {...params} />}
+                />
+              </LocalizationProvider>
+
+              
+              
+             
+              
+           
+              <Editor
+                        apiKey="2s0w71caf8mc5dpcr17pwapuu74ko8mkivvenvzdmvnqyjti"
+                        
+                        onInit={(evt, editor) => (editorRef.current = editor)}
+                        initialValue=""
+                        init={{
+                          height: 600,
+                          menubar: true,
+                          dialog_type : "modal",
+                          automatic_uploads: false,
+                          file_picker_callback: function (cb, value, meta) {
+                            var input = document.createElement("input");
+                            input.setAttribute("type", "file");
+                            input.setAttribute("accept", "image/*, video/*");
+
+                            input.onchange = async function (e: any) {
+                              var file = e.target.files[0];
+                              var formData;
+                              formData = new FormData();
+                              formData.append("file", file);
+                              var urlupload =
+                                process.env.NEXT_PUBLIC_BASE_URL_ADMIN_API;
+
+                              const response: any = await axios.post(
+                                `${urlupload}/tinyupload`,
+                                formData
+                              );
+                              cb(
+                                productImageURL(
+                                  "tinyupload",
+                                  response.data.location
+                                ),
+                                { alt: response.data.alt }
+                              );
+                            };
+                            input.click();
+                          },
+                          plugins:
+                            "link image textpattern lists table preview media",
+                          toolbar:
+                            " undo redo preview | formatselect | Link | image media | table | " +
+                            "bold italic backcolor | alignleft aligncenter " +
+                            "alignright alignjustify | bullist numlist outdent indent | " +
+                            "removeformat",
+                          content_style:
+                            "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                        }}
+                      />
+            <br/>
+            <Field
+                name="status"
+                style={{ marginTop: 16 }}
+                value={addStatus}
+                render={( field: any ) => (
+                  <FormControl fullWidth>
+                  <InputLabel id="demo-simple-select-label">Age</InputLabel>
+                  <Select
+                  onChange={ (e : any) => { setAddStatus(e.target.value) }}
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  label="Age"
+                  defaultValue="Show"
+                  fullWidth
+                >
+                  <MenuItem value="Show">Show</MenuItem>
+                  <MenuItem value="Hide">Hide</MenuItem>
+                </Select>
+                </FormControl>
+                )}
+              />
+
+              <div style={{ margin: 16 }}>{showPreviewImage(values)}</div>
+
+              <div>
+                <Image
+                  objectFit="cover"
+                  alt="product image"
+                  src="/static/img/ic_photo.png"
+                  width={25}
+                  height={20}
+                />
+                <span style={{ color: "#00B0CD", marginLeft: 10 }}>
+                  Add Picture
+                </span>
+
+                <input
+                  type="file"
+                  onChange={(e: React.ChangeEvent<any>) => {
+                    e.preventDefault();
+                    setFieldValue("file", e.target.files[0]); // for upload
+                    setFieldValue(
+                      "file_obj",
+                      URL.createObjectURL(e.target.files[0])
+                    ); // for preview image
+                  }}
+                  name="image"
+                  click-type="type1"
+                  multiple
+                  accept="image/*"
+                  id="files"
+                  style={{ padding: "20px 0 0 20px" }}
+                />
+              </div>
+            </CardContent>
+            <CardActions>
+              <Button
+                disabled={!isValid}
+                fullWidth
+                variant="contained"
+                color="primary"
+                type="submit"
+                sx={{ marginRight: 1 }}
+              >
+                Add
+              </Button>
+            
+                <Button variant="outlined" fullWidth onClick={handleClose}>
+                  Cancel
+                </Button>
+            </CardActions>
+          </Card>
+        </Form>
+        
+      );
+    };
+
+    const showPreviewImage = (values: any) => {
+      if (values.file_obj) {
+        return (
+          <Image
+            objectFit="contain"
+            alt="product image"
+            src={values.file_obj}
+            width={100}
+            height={100}
+          />
+        );
+      }
+    };
+  
+    const initialValues: any = {
+      topic: "",
+      status: "Show",
+      post_date: new Date()
+    };
+
   return (
     <Layout>
       <TextField
@@ -500,14 +743,24 @@ export const News = ({}: Props) => {
             valSelected={selected}
           />
 
+
           <Button
+            sx={{ ml: 2 }}
+            onClick={handleOpen}
+            variant="contained"
+            color="primary"
+          >
+            Add News
+          </Button>
+
+          {/* <Button
             sx={{ ml: 2 }}
             onClick={() => router.push("/admin/news/add")}
             variant="contained"
             color="primary"
           >
             Add News
-          </Button>
+          </Button> */}
 
           <Button
             sx={{ ml: 2, flexGrow: 1 }}
@@ -639,6 +892,9 @@ export const News = ({}: Props) => {
                                       justifyContent="center"
                                       spacing={0}
                                     >
+
+                               
+
                                       <IconButton
                                         color="primary"
                                         aria-label="edit"
@@ -696,6 +952,69 @@ export const News = ({}: Props) => {
           label="Dense padding"
         />
       </Box>
+
+        <Modal
+          open={open}
+          onClose={handleClose}
+          disableEnforceFocus={true}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style}>
+            <Box
+              sx={{
+                width: '100%',
+                maxWidth: '100%',
+              }}
+            >
+              <Formik
+                validate={(values) => {
+                  let errors: any = {};
+                  if (!values.topic) errors.topic = "Enter Topic";
+                  if (!values.post_date) errors.post_date = "Enter Post Date";
+                  if (!values.status) errors.status = "Enter Status";
+                  // if (values.stock < 3) errors.stock = "Min stock is not lower than 3";
+                  // if (values.price < 3) errors.price = "Min price is not lower than 3";
+                  return errors;
+                }}
+                initialValues={initialValues}
+                onSubmit={async (values, { setSubmitting }) => {
+                  console.log(values.file)
+                  const value_date = moment(dateSend).toDate();
+                  const day = value_date.getDate();
+                  const month = value_date.getMonth() + 1;
+                  const year = value_date.getFullYear();
+                  const post_date = year + "-" + month + "-" + day;
+                  let data = new FormData();
+                  data.append("topic", values.topic);
+                  data.append("status", String(addStatus));
+                  data.append("post_date", String(post_date));
+                  if (values.file) {
+                    data.append("thumbnail", values.file);
+                  }
+                  if (editorRef.current) {
+                    data.append("detail", editorRef.current.getContent());
+                  } else {
+                    data.append("detail", "");
+                  }
+                  const response = await addNews(data);
+                  handleClose()
+                    if (response.status == "success") {
+                      Swal.fire("Success!", "Your news has been added", "success").then(
+                        function () {
+                          dispatch(getNews());
+                        }
+                      );
+                    }
+                  
+                  setSubmitting(false);
+                }}
+              >
+                {(props) => showForm(props)}
+              </Formik>
+            </Box>
+          </Box>
+      </Modal>
     </Layout>
   );
 };

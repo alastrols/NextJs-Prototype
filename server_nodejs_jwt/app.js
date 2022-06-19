@@ -341,7 +341,7 @@ app.post("/api/admin/news/sortable", verifyToken, function (req, res) {
   });
 });
 
-app.post("/api/admin/news/add", verifyToken, (req, res) => {
+app.post("/api/admin/news/add", verifyToken,async (req, res) => {
   fields = req.body.fields;
   files = req.body.files;
 
@@ -351,18 +351,36 @@ app.post("/api/admin/news/add", verifyToken, (req, res) => {
   const detail = fields.detail;
   const { user_id } = req;
   var newname = Date.now();
-  var oldpath = files.thumbnail.filepath;
-  var extension = files.thumbnail.originalFilename
-    .split(".")
-    .pop()
-    .toLowerCase();
-  var original_name =
-    files.thumbnail.originalFilename.split(".")[0] + "." + extension;
-  var newpath =
-    __dirname + "/upload/news/" + newname.toString() + "." + extension;
-  const thumbnail = newname.toString() + "." + extension;
 
-  fs.move(oldpath, newpath, async function (err) {
+  if( Object.keys(files).length > 0 ){
+  
+    var oldpath = files.thumbnail.filepath;
+    var extension = files.thumbnail.originalFilename
+      .split(".")
+      .pop()
+      .toLowerCase();
+    var original_name =
+      files.thumbnail.originalFilename.split(".")[0] + "." + extension;
+    var newpath =
+      __dirname + "/upload/news/" + newname.toString() + "." + extension;
+    const thumbnail = newname.toString() + "." + extension;
+  
+    fs.move(oldpath, newpath, async function (err) {
+      const [result] = await connection.query(
+        "SELECT MAX(arr) AS 'arr' FROM news"
+      );
+      var arr = 0;
+      if (result.length > 0) {
+        arr = result[0].arr + 1;
+      }
+      await connection.query(
+        `INSERT INTO news (topic, post_date, original_name, thumbnail, status, user_id, detail,  arr) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [topic, post_date, original_name, thumbnail, status, user_id, detail, arr]
+      );
+  
+      res.json({ status: "success" });
+    });
+  }else{
     const [result] = await connection.query(
       "SELECT MAX(arr) AS 'arr' FROM news"
     );
@@ -371,11 +389,13 @@ app.post("/api/admin/news/add", verifyToken, (req, res) => {
       arr = result[0].arr + 1;
     }
     await connection.query(
-      `INSERT INTO news (topic, post_date, original_name, thumbnail, status, user_id, detail,  arr) VALUES ("${topic}", "${post_date}", "${original_name}", "${thumbnail}", "${status}", "${user_id}", "${detail}", "${arr}")`
+      `INSERT INTO news (topic, post_date, status, user_id, detail,  arr) VALUES (?, ?, ?, ?, ?, ?)`,
+      [topic, post_date, status, user_id, detail, arr]
     );
 
     res.json({ status: "success" });
-  });
+  }
+  
 });
 
 app.get("/api/admin/news/getbyid", async (req, res) => {

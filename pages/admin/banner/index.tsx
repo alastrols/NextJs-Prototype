@@ -156,6 +156,7 @@ export const Banner = ({}: Props) => {
           function () {
             dispatch(deleteAllBanner(id));
             setSelected([]);
+            dispatch(getBanner());
           }
         );
       }
